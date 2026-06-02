@@ -4,3 +4,4 @@ npm-debug.log*
 *.asar
 *.asar.unpacked/
 backups/
+dist/

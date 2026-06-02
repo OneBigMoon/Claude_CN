@@ -1,10 +1,10 @@
-# Claude_CN
+# claude-desktop-cn（macOS M5）
 
-Claude Desktop 中文汉化补丁工具，目标是补齐 Claude / Claude Code / Cowork / 第三方推理配置 / macOS 菜单里常见的英文残留。
+claude-desktop-cn 是 Claude Desktop macOS M5 专版汉化补丁工具，目标是补齐 Claude / Claude Code / Cowork / 第三方推理配置 / macOS 菜单里常见的英文残留。
 
 当前作者：`OneBigMoon`
 
-当前作者版本号：`v0.1.0`
+当前作者版本号：`v0.0.1`
 
 当前维护者说明：本人是 M5 的笔记本，在 M4 上测试没有问题。M5 上遇到了一些奇奇怪怪的问题，于是参考大神的代码进行调整，并把遗漏的页面、菜单和硬编码文本继续补齐。
 
@@ -13,6 +13,8 @@ Claude Desktop 中文汉化补丁工具，目标是补齐 Claude / Claude Code /
 特别致谢并致敬 [Win-Hao/ClaudeCN](https://github.com/Win-Hao/ClaudeCN)。原项目提供了 Claude Desktop 汉化的早期思路和实践基础，本项目在此基础上整理为更完整的补丁流程，并继续补齐 Claude Code、Cowork、第三方推理配置、页面空状态和 macOS 菜单等遗漏。
 
 ## 使用方法
+
+> 产品标识：**claude-desktop-cn（macOS M5）**。
 
 先安装依赖：
 
@@ -37,6 +39,48 @@ npm run patch:no-restart
 ```bash
 node scripts/patch-claude-cn.mjs --app /Applications/Claude.app --restart
 ```
+
+### DMG 一键安装（推荐，最省心）
+
+你只需要执行这三步：
+
+1. 下载 `Releases` 中的 `claude-desktop-cn-macos-m5-0.0.1.dmg`。
+2. 解压后，双击 `Claude_CN_Installer.command`。
+3. macOS 会弹出授权框，输入管理员密码即可自动完成汉化并重启 Claude。
+
+如果你在安装后看不到变化：
+
+- 请确认 Claude 的实际安装路径是 `/Applications/Claude.app`。
+- 手动运行 `bash Claude_CN_Installer.command`，检查是否有错误提示。
+
+### 生成 DMG（在 macOS 机器上）
+
+```bash
+npm run dist:dmg
+```
+
+脚本会生成：
+
+- `dist/claude-desktop-cn-macos-m5-0.0.1.dmg`
+- DMG 内含：`Claude_CN_Installer.command`、`README.md`、`scripts/`、`data/`、`node_modules/`
+
+### 给作者/维护者的一键发布
+
+有 `gh` CLI 的情况下，可直接执行：
+
+```bash
+npm run release:dmg
+```
+
+它会：
+
+- 检查工作区是否干净。
+- 以版本号创建/推送 `v0.0.1` 标签。
+- 运行打包并将 `dist/claude-desktop-cn-macos-m5-0.0.1.dmg` 上传到 GitHub Releases。
+
+## Releases 建议
+
+建议用 `v` 打头的 tag（例如 `v0.0.1`）打包发布，这样 GitHub Releases 会按版本展示下载链接。
 
 ## 补丁内容
 
