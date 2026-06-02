@@ -1,0 +1,14 @@
+{
+  "name": "claude-cn",
+  "version": "0.1.0",
+  "description": "Claude Desktop 中文汉化补丁工具",
+  "type": "module",
+  "private": false,
+  "scripts": {
+    "patch": "node scripts/patch-claude-cn.mjs --restart",
+    "patch:no-restart": "node scripts/patch-claude-cn.mjs"
+  },
+  "dependencies": {
+    "@electron/asar": "^4.1.0"
+  }
+}
