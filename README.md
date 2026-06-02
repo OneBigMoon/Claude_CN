@@ -44,14 +44,14 @@ node scripts/patch-claude-cn.mjs --app /Applications/Claude.app --restart
 
 你只需要执行这三步：
 
-1. 下载 `Releases` 中的 `claude-desktop-cn-macos-m5-0.0.1.dmg`。
-2. 解压后，双击 `Claude_CN_Installer.command`。
+1. 下载 `Releases` 中的 `claude-desktop-cn-macos-m5-0.0.1.dmg`（带版本号的这个才是这个项目的官方包）。
+2. 解压后，双击 `claude-desktop-cn-installer.command`（仅此文件可一键安装）。
 3. macOS 会弹出授权框，输入管理员密码即可自动完成汉化并重启 Claude。
 
 如果你在安装后看不到变化：
 
 - 请确认 Claude 的实际安装路径是 `/Applications/Claude.app`。
-- 手动运行 `bash Claude_CN_Installer.command`，检查是否有错误提示。
+- 手动运行 `bash claude-desktop-cn-installer.command`，检查是否有错误提示。
 
 ### 生成 DMG（在 macOS 机器上）
 
@@ -62,7 +62,7 @@ npm run dist:dmg
 脚本会生成：
 
 - `dist/claude-desktop-cn-macos-m5-0.0.1.dmg`
-- DMG 内含：`Claude_CN_Installer.command`、`README.md`、`scripts/`、`data/`、`node_modules/`
+- DMG 内含：`claude-desktop-cn-installer.command`（兼容保留：`Claude_CN_Installer.command`）、`README.md`、`scripts/`、`data/`、`node_modules/`
 
 ### 给作者/维护者的一键发布
 

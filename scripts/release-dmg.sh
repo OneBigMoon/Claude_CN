@@ -45,7 +45,7 @@ else
     --notes "claude-desktop-cn macOS M5 中文补丁 ${TAG}。
 
 下载链接：dist/${DMG_NAME}
-直接解压后双击 Claude_CN_Installer.command 即可。
+直接解压后双击 claude-desktop-cn-installer.command 即可。
 "
 fi
 

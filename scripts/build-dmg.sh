@@ -8,7 +8,7 @@ APP_NAME="claude-desktop-cn-macos-m5"
 DMG_NAME="${APP_NAME}-${VERSION}.dmg"
 OUTPUT_DIR="${ROOT_DIR}/dist"
 STAGE_DIR="${OUTPUT_DIR}/stage"
-INSTALLER="${ROOT_DIR}/Claude_CN_Installer.command"
+INSTALLER="${ROOT_DIR}/claude-desktop-cn-installer.command"
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
   echo "build-dmg 仅支持在 macOS 上运行（需要 hdiutil）。" >&2
@@ -38,15 +38,17 @@ fi
 rm -rf "$OUTPUT_DIR"
 mkdir -p "$STAGE_DIR"
 
-cp "$ROOT_DIR/README.md" "$ROOT_DIR/package.json" "$ROOT_DIR/package-lock.json" "$ROOT_DIR/Claude_CN_Installer.command" "$STAGE_DIR/"
+cp "$ROOT_DIR/README.md" "$ROOT_DIR/package.json" "$ROOT_DIR/package-lock.json" "$ROOT_DIR/claude-desktop-cn-installer.command" "$STAGE_DIR/"
 cp -R "$ROOT_DIR/scripts" "$ROOT_DIR/data" "$ROOT_DIR/node_modules" "$STAGE_DIR/"
 
-chmod +x "$STAGE_DIR/Claude_CN_Installer.command"
+chmod +x "$STAGE_DIR/claude-desktop-cn-installer.command"
+
+cp "$STAGE_DIR/claude-desktop-cn-installer.command" "$STAGE_DIR/Claude_CN_Installer.command"
 
 cat > "$STAGE_DIR/安装说明.txt" <<'EOF'
 claude-desktop-cn（macOS M5）一键安装包
 
-1) 双击 Claude_CN_Installer.command
+1) 双击 claude-desktop-cn-installer.command
 2) 输入管理员密码
 3) 自动打补丁并重启 Claude
 
