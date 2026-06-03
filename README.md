@@ -1,6 +1,7 @@
 # claude-desktop-cn（macOS M5）
 
-claude-desktop-cn 是 Claude Desktop macOS M5 专版汉化补丁工具，目标是补齐 Claude / Claude Code / Cowork / 第三方推理配置 / macOS 菜单里常见的英文残留。
+**claude-desktop-cn（macOS M5）是 Claude Desktop 全部汉化版本。**
+面向 Claude Desktop / Claude Code / Cowork / 第三方推理配置 / macOS 菜单做了全量中文化补齐，目标是尽量把界面常见英文残留清理到位。
 
 当前作者：`OneBigMoon`
 

@@ -46,7 +46,7 @@ chmod +x "$STAGE_DIR/claude-desktop-cn-installer.command"
 cp "$STAGE_DIR/claude-desktop-cn-installer.command" "$STAGE_DIR/Claude_CN_Installer.command"
 
 cat > "$STAGE_DIR/安装说明.txt" <<'EOF'
-claude-desktop-cn（macOS M5）一键安装包
+claude-desktop-cn（macOS M5）全部汉化版本
 
 1) 双击 claude-desktop-cn-installer.command
 2) 输入管理员密码

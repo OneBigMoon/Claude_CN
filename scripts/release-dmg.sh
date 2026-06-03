@@ -41,8 +41,8 @@ if gh -R "$GH_REPO" release view "$TAG" >/dev/null 2>&1; then
   gh -R "$GH_REPO" release upload "$TAG" "$DMG_PATH" --clobber
 else
   gh -R "$GH_REPO" release create "$TAG" "$DMG_PATH" \
-    --title "claude-desktop-cn macOS M5 ${TAG}" \
-    --notes "claude-desktop-cn macOS M5 中文补丁 ${TAG}。
+    --title "claude-desktop-cn macOS M5 全部汉化版本 ${TAG}" \
+    --notes "claude-desktop-cn macOS M5 全部汉化版本 ${TAG}。
 
 下载链接：dist/${DMG_NAME}
 直接解压后双击 claude-desktop-cn-installer.command 即可。

@@ -25,4 +25,4 @@ set quotedApp to quoted form of "$CLAUDE_APP_PATH"
 do shell script "cd " & quotedRoot & " && " & quotedNode & " " & quotedScript & " --app " & quotedApp & " --restart" with administrator privileges
 OSA
 
-osascript -e 'display dialog "claude-desktop-cn（macOS M5）补丁已执行完毕。若 Claude 未自动重启，请手动启动 Claude.app。" with title "claude-desktop-cn 安装完成" with icon note buttons {"完成"}'
+osascript -e 'display dialog "claude-desktop-cn（macOS M5）全部汉化补丁已执行完毕。若 Claude 未自动重启，请手动启动 Claude.app。" with title "claude-desktop-cn 安装完成" with icon note buttons {"完成"}'
