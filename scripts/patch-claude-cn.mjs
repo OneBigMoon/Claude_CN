@@ -1059,6 +1059,16 @@ const currentVersionLiteralTranslations = {
   "你使用的 token 数大约与 Moby-Dick 相当。": "你使用的 token 数大约与《白鲸》相当。",
 };
 
+const currentVersionIdTranslations = {
+  "AwrXvhJa7p": "按计划或在需要时运行任务。在任何现有任务中输入 <code>/schedule</code> 即可设置。",
+  "bvhdbswdqH": "按计划或在需要时运行任务。",
+  "k27Sp3+4kq": "按计划或在需要时运行任务。在任何会话中输入 /schedule 即可设置。",
+  "xMaJZvtOIn": "Claude 也可以按计划或在你需要时运行任务。",
+  "Cs2Rf1AkqB": "安排重复任务",
+  "Vk5b0msPm9": "安排任务",
+  "KL/gQqGUU1": "安排任务",
+};
+
 function applyCurrentVersionTranslations(parsed) {
   const pairsByMessage = collectCurrentVersionMessages();
   let added = 0;
@@ -1072,6 +1082,12 @@ function applyCurrentVersionTranslations(parsed) {
           added++;
         }
       }
+    }
+  }
+  for (const [id, translation] of Object.entries(currentVersionIdTranslations)) {
+    if (parsed[id] !== translation) {
+      parsed[id] = translation;
+      added++;
     }
   }
   log(`新版 Intl 资源：合并 ${added} 条`);
