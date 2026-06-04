@@ -843,6 +843,56 @@ const currentVersionLiteralTranslations = {
   "Failed to save auto-update setting": "保存自动更新设置失败",
   "Failed to check for extension updates": "检查扩展更新失败",
 
+  // Usage limits, organization banner, firewall allowlist, and bootstrap source
+  "Max tokens per window": "每个窗口最大 token 数",
+  "Per-user soft cap, counted client-side over the duration below. Not a server-enforced quota.": "每用户软上限，由客户端在下面设置的时长内统计。不是服务器强制配额。",
+  "Token cap window": "token 上限窗口",
+  "Tumbling window length for the token cap. Max 720 hours (30 days).": "token 上限的滚动窗口时长。最长 720 小时（30 天）。",
+  "Token limit reached ({used, number} of {cap, number} in this {windowHours}-hour window). Contact your IT administrator.": "已达到 token 限制（此 {windowHours} 小时窗口内已使用 {used, number}/{cap, number}）。请联系你的 IT 管理员。",
+  "Tokens": "tokens",
+  "tokens": "tokens",
+  "{count} tokens": "{count} tokens",
+  "~{count} tokens": "~{count} tokens",
+  "{tokens} tokens": "{tokens} tokens",
+  "Total tokens": "总 token 数",
+  "Daily tokens by model": "按 model 统计的每日 token",
+  "Compacted conversation · saved {tokens} tokens": "已压缩对话 · 节省 {tokens} tokens",
+  "Compacted conversation · from {tokens} tokens": "已压缩对话 · 原 {tokens} tokens",
+  "You've used about as many tokens as {book}.": "你使用的 token 数大约与 {book} 相当。",
+  "You've used ~{times}× more tokens than {book}.": "你使用的 token 数约为 {book} 的 {times} 倍。",
+  "You've used ~{multiplier}× more tokens than {book}.": "你使用的 token 数约为 {book} 的 {multiplier} 倍。",
+  "Max effort can use excessive tokens resulting in hitting limits. Consider using a lower effort setting.": "Max effort 可能使用过多 token，导致触及限制。建议使用较低 effort 设置。",
+  "May use excessive tokens resulting in long response times and may hit token limits. Use sparingly for the hardest tasks.": "可能使用过多 token，导致响应时间变长并触及 token 限制。请仅在最困难的任务中谨慎使用。",
+  "Model": "Model",
+  "Models": "Models",
+  "Favorite model": "常用 model",
+  "Model: mimo-v2.5-pro": "Model: mimo-v2.5-pro",
+  "Add MCP servers, set a model allowlist, or change providers any time in the Inference configuration menu.": "添加 MCP 服务器、设置 model 允许列表，或随时在推理配置菜单中更改提供商。",
+  "Your gateway couldn't serve {model}. This model may not be configured on your gateway, or access may be restricted.": "你的网关无法提供 {model}。该 model 可能未在网关中配置，或访问受限。",
+  "Your connection works, but the provider rejected a test request. This is often a model-access or quota issue your admin can resolve.": "连接可用，但提供商拒绝了测试请求。这通常是 model 访问权限或配额问题，管理员可处理。",
+  "Your connection works, but the provider rejected a test request. Often a model-access or quota issue.": "连接可用，但提供商拒绝了测试请求。通常是 model 访问权限或配额问题。",
+  "Organization banner": "组织横幅",
+  "A persistent banner across the top of the app window after sign-in.": "登录后显示在应用窗口顶部的常驻横幅。",
+  "Show banner": "显示横幅",
+  "Customize the classification banner displayed at the top of the page for all users in your organization. When not set, the default banner from your environment configuration is used.": "自定义显示在组织所有用户页面顶部的分类横幅。未设置时，将使用环境配置中的默认横幅。",
+  "Optional HTTPS URL. The banner text becomes a link when set.": "可选 HTTPS URL。设置后，横幅文本会变成链接。",
+  "Banner settings saved.": "横幅设置已保存。",
+  "Why this banner is shown": "为什么显示此横幅",
+  "Before you proceed, you must acknowledge the usage conditions presented here. The notification message or banner will remain on your screen until you take explicit action to further access the system.": "继续之前，你必须确认此处显示的使用条件。通知消息或横幅会一直保留在屏幕上，直到你明确操作后继续访问系统。",
+  "Firewall allowlist": "防火墙允许列表",
+  "Core (VM bundle + Claude CLI binary)": "核心（VM 包 + Claude CLI 二进制文件）",
+  "Tool egress (Cowork tasks and Code sessions)": "工具出站（Cowork 任务和 Code 会话）",
+  "VM tool egress is unrestricted — tools may reach any host your firewall allows. Common hosts (not exhaustive):": "VM 工具出站不受限制，工具可以访问防火墙允许的任何主机。常见主机如下（并非完整列表）：",
+  "Hosts your network firewall must allow, derived from your current settings. This list is read-only and updates as you make changes. Traffic is HTTPS on port 443 unless a custom port is specified (OTLP, gateway, or MCP server URLs).": "你的网络防火墙必须允许的主机，基于当前设置生成。此列表为只读，并会随设置变更自动更新。除非指定了自定义端口（OTLP、网关或 MCP 服务器 URL），流量均为 443 端口 HTTPS。",
+  "Point this configuration at a bootstrap URL to have your organization manage these settings remotely.": "将此配置指向 bootstrap URL，以便你的组织远程管理这些设置。",
+  "Bootstrap config URL": "Bootstrap 配置 URL",
+  "HTTPS endpoint that returns a per-user JSON config overlay. Values from the response override local settings and become read-only.": "返回每用户 JSON 配置覆盖的 HTTPS 端点。响应中的值会覆盖本地设置并变为只读。",
+  "Bootstrap config server": "Bootstrap 配置服务器",
+  "This configuration is fetched from a bootstrap URL at launch. Fields it provides are locked below.": "此配置会在启动时从 bootstrap URL 获取。其提供的字段会在下方锁定。",
+  "Settings covered by the URL are read-only below.": "该 URL 覆盖的设置在下方为只读。",
+  "Set by bootstrap URL · <h>{host}</h>": "由 bootstrap URL 设置 · <h>{host}</h>",
+  "Typically supplied by your bootstrap server. Ignored when bootstrap is disabled.": "通常由你的 bootstrap 服务器提供。禁用 bootstrap 时会忽略。",
+
   // Sidebar and selector values observed after restart
   "Mode": "模式",
   "Projects": "项目",
@@ -887,6 +937,41 @@ function applyKnownTranslationsFromEnglishResource(parsed, english) {
     }
   }
   log(`新版英文资源对照：合并 ${added} 条`);
+}
+
+function applyTechnicalTermPolicy(parsed, english) {
+  const exact = {
+    "rhSI1/3g21": "Model",
+    "rnGeAhDEEE": "Model",
+    "blWvagsLt7": "Models",
+    "HcKBhf6Q5g": "常用 model"
+  };
+  let changed = 0;
+  for (const [id, value] of Object.entries(english)) {
+    if (typeof value !== "string" || typeof parsed[id] !== "string") continue;
+    let next = parsed[id];
+    if (/\btokens?\b/i.test(value)) {
+      next = next
+        .replaceAll("代币", "token")
+        .replaceAll("令牌", "token")
+        .replaceAll("Token", "token");
+    }
+    if (/\bmodels?\b/i.test(value)) {
+      next = next.replaceAll("模型", "model");
+    }
+    if (Object.prototype.hasOwnProperty.call(exact, id)) next = exact[id];
+    if (next !== parsed[id]) {
+      parsed[id] = next;
+      changed++;
+    }
+  }
+  for (const [id, value] of Object.entries(exact)) {
+    if (parsed[id] !== value) {
+      parsed[id] = value;
+      changed++;
+    }
+  }
+  log(`技术术语统一：修正 ${changed} 条`);
 }
 
 function collectCurrentVersionMessages() {
@@ -1031,6 +1116,7 @@ function installZhCnJson() {
   const parsed = mergeTranslations(mergeTranslations(base, previous), overlay);
   applyKnownTranslationsFromEnglishResource(parsed, base);
   applyCurrentVersionTranslations(parsed);
+  applyTechnicalTermPolicy(parsed, base);
   writeJson(target, parsed);
   maybeWriteZstdJson(target);
   log(`已更新 ${target}`);
