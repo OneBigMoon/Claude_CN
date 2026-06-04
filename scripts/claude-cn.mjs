@@ -7,6 +7,9 @@ import { spawnSync, execFileSync } from "node:child_process";
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const patchScript = path.join(repoRoot, "scripts", "patch-claude-cn.mjs");
 const defaultApp = "/Applications/Claude.app";
+const compatibleClaudeDesktopVersions = [
+  { label: "1.10628.x", prefix: "1.10628." }
+];
 const args = process.argv.slice(2);
 const command = args[0] && !args[0].startsWith("-") ? args.shift() : "apply";
 
@@ -57,15 +60,31 @@ function readPlistValue(file, key) {
   }
 }
 
+function claudeAppVersion(app) {
+  const infoPlist = path.join(app, "Contents", "Info.plist");
+  if (!fs.existsSync(infoPlist)) return "";
+  return readPlistValue(infoPlist, "CFBundleShortVersionString") || readPlistValue(infoPlist, "CFBundleVersion");
+}
+
+function compatibleVersionText() {
+  return compatibleClaudeDesktopVersions.map((item) => item.label).join(", ");
+}
+
+function compatibilityForVersion(version) {
+  if (!version) return { supported: false, text: "未知版本" };
+  const matched = compatibleClaudeDesktopVersions.find((item) => version.startsWith(item.prefix));
+  return matched
+    ? { supported: true, text: `已适配 ${matched.label}` }
+    : { supported: false, text: `未适配 ${version}` };
+}
+
 function status() {
   const app = resolveClaudeApp();
   const resources = path.join(app, "Contents", "Resources");
   const zhResource = path.join(resources, "ion-dist", "i18n", "zh-CN.json");
   const desktopZhResource = path.join(resources, "zh-CN.json");
-  const infoPlist = path.join(app, "Contents", "Info.plist");
-  const appVersion = fs.existsSync(infoPlist)
-    ? readPlistValue(infoPlist, "CFBundleShortVersionString") || readPlistValue(infoPlist, "CFBundleVersion")
-    : "";
+  const appVersion = claudeAppVersion(app);
+  const compatibility = compatibilityForVersion(appVersion);
   const configs = ["Claude", "Claude-3p"].map((name) => {
     const file = path.join(os.homedir(), "Library", "Application Support", name, "config.json");
     const data = readJson(file);
@@ -77,6 +96,8 @@ function status() {
   log(`Claude.app: ${fs.existsSync(app) ? app : `${app}（未找到）`}`);
   log(`状态: ${localized ? "已汉化" : "未汉化"}`);
   log(`Claude 版本: ${appVersion || "未知"}`);
+  log(`兼容版本: ${compatibleVersionText()}`);
+  log(`兼容状态: ${compatibility.text}`);
   log(`中文 i18n: ${fs.existsSync(zhResource) ? "已安装" : "未安装"}`);
   log(`桌面中文资源: ${fs.existsSync(desktopZhResource) ? "已安装" : "未安装"}`);
   for (const config of configs) log(`${config.name} locale: ${config.locale}`);
@@ -121,7 +142,14 @@ function quitClaude() {
 function apply() {
   const app = resolveClaudeApp();
   if (!fs.existsSync(app)) die(`找不到 Claude.app：${app}\n可使用 --app /path/to/Claude.app 指定路径。`);
+  const appVersion = claudeAppVersion(app);
+  const compatibility = compatibilityForVersion(appVersion);
+  const force = args.includes("--force");
+  if (!compatibility.supported && !force) {
+    die(`当前 Claude Desktop 版本不在已适配范围内。\n当前版本：${appVersion || "未知"}\n已适配版本：${compatibleVersionText()}\n\n为避免 Claude 更新后结构变化导致汉化不完整或应用损坏，已停止执行。\n如果你确认要强制尝试，可添加 --force。`);
+  }
   log(`开始一键汉化：${app}`);
+  log(`Claude Desktop 版本：${appVersion || "未知"}（${compatibility.text}${force && !compatibility.supported ? "，已强制继续" : ""}）`);
   log("将自动备份、注入 zh-CN、重打包、重签名、重启 Claude。英文模式保持原版英文。");
   const passthrough = args.filter((item, index) => {
     if (item === "--app") return false;
@@ -162,6 +190,47 @@ function backupTargetForFile(app, backupFile) {
   return path.join(app, restored);
 }
 
+function removeIfExists(file) {
+  if (fs.existsSync(file)) {
+    fs.rmSync(file, { recursive: true, force: true });
+    log(`已移除：${file}`);
+  }
+}
+
+function removePatchedLocaleFiles(app) {
+  const resources = path.join(app, "Contents", "Resources");
+  const files = [
+    path.join(resources, "ion-dist", "i18n", "zh-CN.json"),
+    path.join(resources, "ion-dist", "i18n", "zh-CN.json.zst"),
+    path.join(resources, "ion-dist", "i18n", "zh-CN.overrides.json"),
+    path.join(resources, "ion-dist", "i18n", "zh-CN.overrides.json.zst"),
+    path.join(resources, "ion-dist", "i18n", "statsig", "zh-CN.json"),
+    path.join(resources, "ion-dist", "i18n", "statsig", "zh-CN.json.zst"),
+    path.join(resources, "zh-CN.json"),
+    path.join(resources, "zh-CN.lproj"),
+    path.join(resources, "zh_CN.lproj")
+  ];
+  for (const file of files) removeIfExists(file);
+}
+
+function resetLocaleConfigs() {
+  for (const name of ["Claude", "Claude-3p"]) {
+    const file = path.join(os.homedir(), "Library", "Application Support", name, "config.json");
+    const data = readJson(file);
+    if (!data) continue;
+    if (data.locale || data.language) {
+      data.locale = "en-US";
+      delete data.language;
+      fs.writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`);
+      log(`已恢复语言配置：${file}`);
+    }
+  }
+  try {
+    execFileSync("defaults", ["delete", "com.anthropic.claudefordesktop", "AppleLanguages"], { stdio: "ignore" });
+    log("已移除 macOS Claude AppleLanguages 覆盖。");
+  } catch {}
+}
+
 function restore() {
   const app = resolveClaudeApp();
   const backup = argValue("--backup") || latestBackup();
@@ -182,6 +251,9 @@ function restore() {
     restoredCount += 1;
   }
 
+  removePatchedLocaleFiles(app);
+  resetLocaleConfigs();
+
   try {
     spawnSync("codesign", ["--force", "--deep", "--sign", "-", app], { stdio: "inherit" });
   } catch {}
@@ -189,13 +261,13 @@ function restore() {
     spawnSync("xattr", ["-dr", "com.apple.quarantine", app], { stdio: "ignore" });
   } catch {}
 
-  log(`已恢复 ${restoredCount} 个文件。`);
+  log(`已恢复 ${restoredCount} 个备份文件，并清理中文资源/语言配置。`);
   activateClaude(app);
   log("已恢复并打开 Claude。");
 }
 
 function help() {
-  console.log(`Claude_CN 一键工具\n\n用法：\n  npm run cn                 一键汉化并自动重启 Claude\n  npm run cn -- apply        同上\n  npm run cn -- status       查看安装/语言状态\n  npm run cn -- restore      从最近一次备份恢复原版\n  npm run cn -- open         打开并置顶 Claude\n\n选项：\n  --app /Applications/Claude.app    指定 Claude.app 路径\n  --backup /path/to/backup          指定恢复备份目录\n  --cleanup-static-cn               清理旧版静态汉化残留\n  --static-cn                       强制静态中文（不推荐，会影响英文模式）\n`);
+  console.log(`Claude_CN 一键工具\n\n已适配 Claude Desktop：${compatibleVersionText()}\n\n用法：\n  npm run cn                 一键汉化并自动重启 Claude\n  npm run cn -- apply        同上\n  npm run cn -- status       查看安装/语言状态\n  npm run cn -- restore      从最近一次备份恢复原版\n  npm run cn -- open         打开并置顶 Claude\n\n选项：\n  --app /Applications/Claude.app    指定 Claude.app 路径\n  --backup /path/to/backup          指定恢复备份目录\n  --force                           当前 Claude 版本未适配时仍强制尝试\n  --cleanup-static-cn               清理旧版静态汉化残留\n  --static-cn                       强制静态中文（不推荐，会影响英文模式）\n`);
 }
 
 switch (command) {

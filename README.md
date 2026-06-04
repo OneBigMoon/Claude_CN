@@ -5,7 +5,11 @@
 
 当前作者：`OneBigMoon`
 
-当前作者版本号：`v0.0.4`
+当前作者版本号：`v0.0.5`
+
+当前已适配 Claude Desktop：`1.10628.x`
+
+如果 Claude Desktop 更新到新的大版本，本工具会在执行汉化前做版本判断。未适配版本默认不会继续汉化，避免 Claude 更新后结构变化导致汉化不完整或应用损坏。维护者确认后可用 `--force` 强制尝试。
 
 当前维护者说明：本人是 M5 的笔记本，在 M4 上测试没有问题。M5 上遇到了一些奇奇怪怪的问题，于是参考大神的代码进行调整，并把遗漏的页面、菜单和硬编码文本继续补齐。
 
@@ -17,12 +21,12 @@
 
 ### 普通用户下载哪个文件？
 
-当前正式版本：[`v0.0.4`](https://github.com/OneBigMoon/Claude_CN/releases/tag/v0.0.4)
+当前正式版本：[`v0.0.5`](https://github.com/OneBigMoon/Claude_CN/releases/tag/v0.0.5)
 
 推荐下载：
 
 - `ClaudeCN-macos.zip`：解压后得到 `ClaudeCN.app`，这是推荐给普通用户的菜单栏应用。
-- `claude-desktop-cn-macos-m5-0.0.4.dmg`：App 型 DMG，打开后可直接运行或拖拽安装 `ClaudeCN.app`。
+- `claude-desktop-cn-macos-m5-0.0.5.dmg`：App 型 DMG，打开后可直接运行或拖拽安装 `ClaudeCN.app`。
 - 源码包：适合维护者、开发者和想自己适配新 Claude 版本的人。
 
 ### ClaudeCN.app 使用方式（推荐）
@@ -36,8 +40,10 @@
 菜单栏应用包含这些功能：
 
 - 一键汉化并重启 Claude。
+- 判断当前 Claude Desktop 版本是否在已适配范围内。
 - 选择自定义 `Claude.app` 路径后汉化。
 - 检查当前汉化/语言状态。
+- 从最近一次备份恢复原版，并清理新增中文资源和语言配置。
 - 打开 Claude。
 - 打开运行日志。
 - 打开项目主页。
@@ -50,6 +56,8 @@
 执行汉化时，macOS 可能会要求输入管理员密码。这是因为工具需要修改 `/Applications/Claude.app`、重打包 `app.asar`、重签名并重启 Claude。工具不会上传你的 Claude 数据、账号信息或聊天内容。
 
 Claude Desktop 更新后，官方更新可能会覆盖已汉化文件。如果更新后又变回英文，重新打开 `ClaudeCN.app`，再次点击 `一键汉化并重启 Claude` 即可。
+
+如果 ClaudeCN 提示当前 Claude Desktop 版本未适配，请先等待项目更新。不要盲目强制汉化，除非你愿意承担新版本结构变化带来的风险。
 
 > 产品标识：**claude-desktop-cn（macOS M5）**。
 
@@ -71,6 +79,12 @@ npm run cn
 
 ```bash
 npm run cn -- status
+```
+
+如果当前 Claude Desktop 版本未适配，命令会停止执行。确认要强制尝试时：
+
+```bash
+npm run cn -- apply --force
 ```
 
 指定 Claude.app 路径：
@@ -126,7 +140,7 @@ npm run menubar:build
 
 如果你更习惯 DMG 安装包，可以执行这三步：
 
-1. 下载 `Releases` 中的 `claude-desktop-cn-macos-m5-0.0.4.dmg`。
+1. 下载 `Releases` 中的 `claude-desktop-cn-macos-m5-0.0.5.dmg`。
 2. 打开 DMG，将 `ClaudeCN.app` 拖到 `Applications`，也可以直接双击运行。
 3. 点击菜单栏里的 `一键汉化并重启 Claude`。
 4. macOS 会弹出授权框，输入管理员密码即可自动完成汉化、重启 Claude，并打开查看效果。
@@ -145,7 +159,7 @@ npm run dist:dmg
 
 脚本会生成：
 
-- `dist/claude-desktop-cn-macos-m5-0.0.4.dmg`
+- `dist/claude-desktop-cn-macos-m5-0.0.5.dmg`
 - `dist/ClaudeCN-macos.zip`
 - DMG 内含：`ClaudeCN.app`、`Applications` 拖拽快捷方式、`README.md`、`安装说明.txt`
 
@@ -160,21 +174,21 @@ npm run release:dmg
 它会：
 
 - 检查工作区是否干净。
-- 以版本号创建/推送 `v0.0.4` 标签。
-- 运行打包并将 `dist/claude-desktop-cn-macos-m5-0.0.4.dmg` 和 `dist/ClaudeCN-macos.zip` 上传到 GitHub Releases。
+- 以版本号创建/推送 `v0.0.5` 标签。
+- 运行打包并将 `dist/claude-desktop-cn-macos-m5-0.0.5.dmg` 和 `dist/ClaudeCN-macos.zip` 上传到 GitHub Releases。
 
 ## Releases 建议
 
 当前正式 Release：
 
-- [`v0.0.4`](https://github.com/OneBigMoon/Claude_CN/releases/tag/v0.0.4)
+- [`v0.0.5`](https://github.com/OneBigMoon/Claude_CN/releases/tag/v0.0.5)
 
 每个 Release 建议至少包含：
 
 - `ClaudeCN-macos.zip`：普通用户推荐下载。
 - `claude-desktop-cn-macos-m5-版本号.dmg`：兼容传统安装方式。
 
-建议用 `v` 打头的 tag（例如 `v0.0.4`）打包发布，这样 GitHub Releases 会按版本展示下载链接。
+建议用 `v` 打头的 tag（例如 `v0.0.5`）打包发布，这样 GitHub Releases 会按版本展示下载链接。
 
 ## 补丁内容
 

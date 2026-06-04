@@ -4,6 +4,9 @@ import Foundation
 struct ClaudeCNState {
     var status: String = "检测中"
     var version: String = "-"
+    var compatibleVersion: String = "1.10628.x"
+    var compatibility: String = "检测中"
+    var isCompatible: Bool = true
     var isLocalized: Bool = false
     var isRunning: Bool = false
 }
@@ -26,7 +29,7 @@ final class ClaudeCNPanelView: NSView {
     }
     var onAction: ((PanelAction) -> Void)?
 
-    private let size = NSSize(width: 320, height: 494)
+    private let size = NSSize(width: 320, height: 532)
     private var hoverAction: PanelAction? {
         didSet { needsDisplay = true }
     }
@@ -35,10 +38,10 @@ final class ClaudeCNPanelView: NSView {
     override var isFlipped: Bool { true }
     override var intrinsicContentSize: NSSize { size }
 
-    private var repatchRect: NSRect { NSRect(x: 28, y: 222, width: 264, height: 44) }
-    private var restoreRect: NSRect { NSRect(x: 28, y: 276, width: 264, height: 44) }
-    private var refreshRect: NSRect { NSRect(x: 28, y: 448, width: 92, height: 34) }
-    private var quitRect: NSRect { NSRect(x: 200, y: 448, width: 92, height: 34) }
+    private var repatchRect: NSRect { NSRect(x: 28, y: 256, width: 264, height: 44) }
+    private var restoreRect: NSRect { NSRect(x: 28, y: 310, width: 264, height: 44) }
+    private var refreshRect: NSRect { NSRect(x: 28, y: 486, width: 92, height: 34) }
+    private var quitRect: NSRect { NSRect(x: 200, y: 486, width: 92, height: 34) }
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -82,7 +85,8 @@ final class ClaudeCNPanelView: NSView {
     }
 
     private func action(at point: NSPoint) -> PanelAction? {
-        if repatchRect.contains(point) { return .repatch }
+        if state.isRunning { return nil }
+        if repatchRect.contains(point) { return state.isCompatible ? .repatch : nil }
         if restoreRect.contains(point) { return .restore }
         if refreshRect.contains(point) { return .refresh }
         if quitRect.contains(point) { return .quit }
@@ -94,11 +98,11 @@ final class ClaudeCNPanelView: NSView {
         drawHeader()
         drawSeparator(y: 112)
         drawStatusSection()
-        drawSeparator(y: 202)
+        drawSeparator(y: 236)
         drawActions()
-        drawSeparator(y: 336)
+        drawSeparator(y: 374)
         drawAuthor()
-        drawSeparator(y: 436)
+        drawSeparator(y: 474)
         drawFooter()
     }
 
@@ -155,6 +159,7 @@ final class ClaudeCNPanelView: NSView {
     private func drawStatusSection() {
         drawText("状态", in: NSRect(x: 28, y: 134, width: 80, height: 22), font: .boldSystemFont(ofSize: 17), color: ink(), alignment: .left)
         drawText("版本", in: NSRect(x: 28, y: 168, width: 80, height: 22), font: .boldSystemFont(ofSize: 17), color: ink(), alignment: .left)
+        drawText("兼容", in: NSRect(x: 28, y: 202, width: 80, height: 22), font: .boldSystemFont(ofSize: 17), color: ink(), alignment: .left)
 
         let dotColor = state.isRunning ? NSColor.systemOrange : (state.isLocalized ? NSColor.systemGreen : NSColor.systemRed)
         dotColor.setFill()
@@ -174,6 +179,17 @@ final class ClaudeCNPanelView: NSView {
             color: ink(),
             alignment: .right
         )
+
+        let compatColor = state.isCompatible ? NSColor.systemGreen : NSColor.systemOrange
+        compatColor.setFill()
+        NSBezierPath(ovalIn: NSRect(x: 188, y: 208, width: 10, height: 10)).fill()
+        drawText(
+            state.isCompatible ? state.compatibleVersion : "需适配",
+            in: NSRect(x: 204, y: 200, width: 98, height: 22),
+            font: .systemFont(ofSize: 15, weight: .medium),
+            color: ink(),
+            alignment: .right
+        )
     }
 
     private func drawActions() {
@@ -182,10 +198,10 @@ final class ClaudeCNPanelView: NSView {
     }
 
     private func drawAuthor() {
-        drawText("作者：OneBigMoon", in: NSRect(x: 30, y: 354, width: 260, height: 18), font: .systemFont(ofSize: 13, weight: .bold), color: ink(), alignment: .center)
-        drawText("致谢：Winhao学AI / Win-Hao/ClaudeCN", in: NSRect(x: 30, y: 378, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .semibold), color: ink(alpha: 0.92), alignment: .center)
-        drawText("本软件完全免费，不可商业化", in: NSRect(x: 30, y: 402, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .bold), color: .systemOrange, alignment: .center)
-        drawText("付费获取即被骗，请举报", in: NSRect(x: 30, y: 424, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .bold), color: .systemRed, alignment: .center)
+        drawText("作者：OneBigMoon", in: NSRect(x: 30, y: 392, width: 260, height: 18), font: .systemFont(ofSize: 13, weight: .bold), color: ink(), alignment: .center)
+        drawText("致谢：Winhao学AI / Win-Hao/ClaudeCN", in: NSRect(x: 30, y: 416, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .semibold), color: ink(alpha: 0.92), alignment: .center)
+        drawText("本软件完全免费，不可商业化", in: NSRect(x: 30, y: 440, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .bold), color: .systemOrange, alignment: .center)
+        drawText("付费获取即被骗，请举报", in: NSRect(x: 30, y: 462, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .bold), color: .systemRed, alignment: .center)
     }
 
     private func drawFooter() {
@@ -195,7 +211,8 @@ final class ClaudeCNPanelView: NSView {
 
     private func drawButton(rect: NSRect, title: String, symbol: String?, action: PanelAction, large: Bool) {
         let hovered = hoverAction == action
-        let enabled = !state.isRunning || action == .quit || action == .refresh
+        let enabled = (!state.isRunning || action == .quit || action == .refresh)
+            && (action != .repatch || state.isCompatible)
         let fill = enabled
             ? NSColor(calibratedRed: hovered ? 0.64 : 0.67, green: hovered ? 0.64 : 0.67, blue: hovered ? 0.63 : 0.66, alpha: 1)
             : NSColor(calibratedRed: 0.68, green: 0.68, blue: 0.67, alpha: 1)
@@ -271,7 +288,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.button?.action = #selector(togglePanel)
         statusItem.button?.toolTip = "Claude 汉化助手"
 
-        panelView = ClaudeCNPanelView(frame: NSRect(x: 0, y: 0, width: 320, height: 494))
+        panelView = ClaudeCNPanelView(frame: NSRect(x: 0, y: 0, width: 320, height: 532))
         panelView.onAction = { [weak self] action in
             switch action {
             case .repatch:
@@ -286,7 +303,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         panelWindow = ClaudeCNPanelWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 320, height: 494),
+            contentRect: NSRect(x: 0, y: 0, width: 320, height: 532),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
@@ -423,14 +440,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func parseStatus(_ output: String) -> ClaudeCNState {
         var next = ClaudeCNState()
         for line in output.split(separator: "\n").map(String.init) {
-            if line.contains("状态:") {
+            if line.contains("[Claude_CN] 状态:") {
                 next.status = line.components(separatedBy: "状态:").last?.trimmingCharacters(in: .whitespaces) ?? next.status
             }
-            if line.contains("Claude 版本:") {
+            if line.contains("[Claude_CN] Claude 版本:") {
                 next.version = line.components(separatedBy: "Claude 版本:").last?.trimmingCharacters(in: .whitespaces) ?? next.version
+            }
+            if line.contains("[Claude_CN] 兼容版本:") {
+                next.compatibleVersion = line.components(separatedBy: "兼容版本:").last?.trimmingCharacters(in: .whitespaces) ?? next.compatibleVersion
+            }
+            if line.contains("[Claude_CN] 兼容状态:") {
+                next.compatibility = line.components(separatedBy: "兼容状态:").last?.trimmingCharacters(in: .whitespaces) ?? next.compatibility
             }
         }
         next.isLocalized = next.status.contains("已汉化")
+        next.isCompatible = next.compatibility.contains("已适配")
         return next
     }
 
