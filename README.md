@@ -13,6 +13,30 @@
 
 当前维护者说明：本人是 M5 的笔记本，在 M4 上测试没有问题。M5 上遇到了一些奇奇怪怪的问题，于是参考大神的代码进行调整，并把遗漏的页面、菜单和硬编码文本继续补齐。
 
+## 当前本地验收状态
+
+最近一次本地验收：`2026-06-04`
+
+验收环境：
+
+- Claude Desktop：`1.10628.2`
+- ClaudeCN：`v0.0.17`
+- macOS：Apple Silicon 机器
+
+已验收流程：
+
+- 从隔离的 Claude.app 副本恢复到未汉化状态。
+- 从未汉化状态重新执行一键汉化。
+- 汉化后状态识别为已汉化，`Claude` 和 `Claude-3p` locale 均为 `zh-CN`。
+- 汉化后的 Claude.app 通过 `codesign --verify --deep --strict`。
+- 再次恢复原版后，状态识别为未汉化，locale 回到 `en-US`。
+- 从 GitHub Release 重新下载 `claude-desktop-cn-macos-m5-0.0.17.dmg`，可以正常挂载，内部包含 `ClaudeCN.app`、`Applications` 快捷方式、`README.md` 和 `安装说明.txt`。
+
+验收注意：
+
+- 官方 `https://claude.ai/download` 是下载页，不是直接 DMG 文件；命令行直接请求官方 latest redirect 接口可能返回 `403`。全新安装 Claude Desktop 时，建议普通用户从浏览器打开官方页面下载。
+- 使用自定义 Claude.app 路径做测试时，Claude 的语言配置仍然是当前 macOS 用户级配置。因此测试临时 App 后，如果需要继续使用真实 `/Applications/Claude.app` 的中文模式，请再对真实 Claude 执行一次 `重新汉化`。
+
 ## 特别致谢
 
 特别致谢并致敬 [Win-Hao/ClaudeCN](https://github.com/Win-Hao/ClaudeCN)。原项目提供了 Claude Desktop 汉化的早期思路和实践基础，本项目在此基础上整理为更完整的补丁流程，并继续补齐 Claude Code、Cowork、第三方推理配置、页面空状态和 macOS 菜单等遗漏。
