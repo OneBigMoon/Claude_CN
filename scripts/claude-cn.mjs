@@ -139,6 +139,21 @@ function quitClaude() {
   } catch {}
 }
 
+function sleep(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function forceZhCnLocaleConfigs() {
+  for (const name of ["Claude", "Claude-3p"]) {
+    const file = path.join(os.homedir(), "Library", "Application Support", name, "config.json");
+    const data = readJson(file) || {};
+    data.locale = "zh-CN";
+    delete data.language;
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`);
+  }
+}
+
 function apply() {
   const app = resolveClaudeApp();
   if (!fs.existsSync(app)) die(`找不到 Claude.app：${app}\n可使用 --app /path/to/Claude.app 指定路径。`);
@@ -164,6 +179,10 @@ function apply() {
   if (result.status !== 0) process.exit(result.status ?? 1);
   activateClaude(app);
   const running = waitForClaude();
+  if (running) {
+    sleep(1200);
+    forceZhCnLocaleConfigs();
+  }
   log(running ? "Claude 已重启并置于前台，可以直接查看汉化效果。" : "补丁完成，但未检测到 Claude 进程；请手动打开 Claude 查看效果。");
 }
 
