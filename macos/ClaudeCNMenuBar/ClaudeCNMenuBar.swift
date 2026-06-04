@@ -8,281 +8,254 @@ struct ClaudeCNState {
     var isRunning: Bool = false
 }
 
-final class RoundedPanelView: NSView {
-    override func draw(_ dirtyRect: NSRect) {
-        NSColor(calibratedWhite: 0.72, alpha: 0.96).setFill()
-        NSBezierPath(roundedRect: bounds, xRadius: 22, yRadius: 22).fill()
-    }
+enum PanelAction {
+    case repatch
+    case restore
+    case refresh
+    case quit
 }
 
-final class SeparatorView: NSView {
-    override var intrinsicContentSize: NSSize { NSSize(width: NSView.noIntrinsicMetric, height: 1) }
-
-    override func draw(_ dirtyRect: NSRect) {
-        NSColor(calibratedWhite: 0.55, alpha: 0.55).setFill()
-        dirtyRect.fill()
-    }
+final class ClaudeCNPanelWindow: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
 }
 
-final class DotView: NSView {
-    var color = NSColor.systemGreen {
+final class ClaudeCNPanelView: NSView {
+    var state = ClaudeCNState() {
         didSet { needsDisplay = true }
     }
+    var onAction: ((PanelAction) -> Void)?
 
-    override var intrinsicContentSize: NSSize { NSSize(width: 9, height: 9) }
+    private let size = NSSize(width: 320, height: 494)
+    private var hoverAction: PanelAction? {
+        didSet { needsDisplay = true }
+    }
+    private var trackingAreaRef: NSTrackingArea?
+
+    override var isFlipped: Bool { true }
+    override var intrinsicContentSize: NSSize { size }
+
+    private var repatchRect: NSRect { NSRect(x: 28, y: 222, width: 264, height: 44) }
+    private var restoreRect: NSRect { NSRect(x: 28, y: 276, width: 264, height: 44) }
+    private var refreshRect: NSRect { NSRect(x: 28, y: 448, width: 92, height: 34) }
+    private var quitRect: NSRect { NSRect(x: 200, y: 448, width: 92, height: 34) }
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        layer?.backgroundColor = NSColor.clear.cgColor
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let trackingAreaRef {
+            removeTrackingArea(trackingAreaRef)
+        }
+        let tracking = NSTrackingArea(
+            rect: bounds,
+            options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(tracking)
+        trackingAreaRef = tracking
+    }
+
+    override func mouseMoved(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        hoverAction = action(at: point)
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        hoverAction = nil
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        guard !state.isRunning else { return }
+        let point = convert(event.locationInWindow, from: nil)
+        guard let action = action(at: point) else { return }
+        onAction?(action)
+    }
+
+    private func action(at point: NSPoint) -> PanelAction? {
+        if repatchRect.contains(point) { return .repatch }
+        if restoreRect.contains(point) { return .restore }
+        if refreshRect.contains(point) { return .refresh }
+        if quitRect.contains(point) { return .quit }
+        return nil
+    }
 
     override func draw(_ dirtyRect: NSRect) {
-        color.setFill()
-        NSBezierPath(ovalIn: bounds.insetBy(dx: 1, dy: 1)).fill()
+        drawCard()
+        drawHeader()
+        drawSeparator(y: 112)
+        drawStatusSection()
+        drawSeparator(y: 202)
+        drawActions()
+        drawSeparator(y: 336)
+        drawAuthor()
+        drawSeparator(y: 436)
+        drawFooter()
+    }
+
+    private func drawCard() {
+        let body = NSRect(x: 0, y: 16, width: bounds.width, height: bounds.height - 16)
+        let path = NSBezierPath(roundedRect: body, xRadius: 24, yRadius: 24)
+        let notch = NSBezierPath()
+        let midX = bounds.midX
+        notch.move(to: NSPoint(x: midX - 20, y: 18))
+        notch.curve(
+            to: NSPoint(x: midX, y: 0),
+            controlPoint1: NSPoint(x: midX - 14, y: 12),
+            controlPoint2: NSPoint(x: midX - 9, y: 0)
+        )
+        notch.curve(
+            to: NSPoint(x: midX + 20, y: 18),
+            controlPoint1: NSPoint(x: midX + 9, y: 0),
+            controlPoint2: NSPoint(x: midX + 14, y: 12)
+        )
+        notch.close()
+
+        NSColor(calibratedRed: 0.74, green: 0.74, blue: 0.73, alpha: 1).setFill()
+        path.fill()
+        notch.fill()
+    }
+
+    private func drawHeader() {
+        let iconRect = NSRect(x: 26, y: 52, width: 30, height: 30)
+        NSColor.systemBlue.setFill()
+        NSBezierPath(ovalIn: iconRect).fill()
+
+        if let image = NSImage(systemSymbolName: "globe.asia.australia.fill", accessibilityDescription: "ClaudeCN") {
+            image.draw(in: iconRect.insetBy(dx: 5, dy: 5), from: .zero, operation: .sourceOver, fraction: 1)
+        } else {
+            drawText("中", in: iconRect, font: .boldSystemFont(ofSize: 14), color: .white, alignment: .center)
+        }
+
+        drawText(
+            "Claude 汉化助手",
+            in: NSRect(x: 68, y: 42, width: 210, height: 28),
+            font: .boldSystemFont(ofSize: 19),
+            color: ink(),
+            alignment: .left
+        )
+        drawText(
+            bundleVersionText(),
+            in: NSRect(x: 68, y: 72, width: 210, height: 20),
+            font: .systemFont(ofSize: 13, weight: .medium),
+            color: ink(alpha: 0.9),
+            alignment: .left
+        )
+    }
+
+    private func drawStatusSection() {
+        drawText("状态", in: NSRect(x: 28, y: 134, width: 80, height: 22), font: .boldSystemFont(ofSize: 17), color: ink(), alignment: .left)
+        drawText("版本", in: NSRect(x: 28, y: 168, width: 80, height: 22), font: .boldSystemFont(ofSize: 17), color: ink(), alignment: .left)
+
+        let dotColor = state.isRunning ? NSColor.systemOrange : (state.isLocalized ? NSColor.systemGreen : NSColor.systemRed)
+        dotColor.setFill()
+        NSBezierPath(ovalIn: NSRect(x: 232, y: 140, width: 10, height: 10)).fill()
+
+        drawText(
+            state.isRunning ? "处理中" : state.status,
+            in: NSRect(x: 248, y: 132, width: 58, height: 22),
+            font: .systemFont(ofSize: 15, weight: .medium),
+            color: ink(),
+            alignment: .left
+        )
+        drawText(
+            state.version,
+            in: NSRect(x: 198, y: 168, width: 104, height: 22),
+            font: .systemFont(ofSize: 15, weight: .medium),
+            color: ink(),
+            alignment: .right
+        )
+    }
+
+    private func drawActions() {
+        drawButton(rect: repatchRect, title: state.isRunning ? "正在处理" : "重新汉化", symbol: "arrow.clockwise.circle.fill", action: .repatch, large: true)
+        drawButton(rect: restoreRect, title: "恢复原版", symbol: "arrow.uturn.backward.circle", action: .restore, large: true)
+    }
+
+    private func drawAuthor() {
+        drawText("作者：OneBigMoon", in: NSRect(x: 30, y: 354, width: 260, height: 18), font: .systemFont(ofSize: 13, weight: .bold), color: ink(), alignment: .center)
+        drawText("致谢：Winhao学AI / Win-Hao/ClaudeCN", in: NSRect(x: 30, y: 378, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .semibold), color: ink(alpha: 0.92), alignment: .center)
+        drawText("本软件完全免费，不可商业化", in: NSRect(x: 30, y: 402, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .bold), color: .systemOrange, alignment: .center)
+        drawText("付费获取即被骗，请举报", in: NSRect(x: 30, y: 424, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .bold), color: .systemRed, alignment: .center)
+    }
+
+    private func drawFooter() {
+        drawButton(rect: refreshRect, title: "刷新状态", symbol: nil, action: .refresh, large: false)
+        drawButton(rect: quitRect, title: "退出", symbol: nil, action: .quit, large: false)
+    }
+
+    private func drawButton(rect: NSRect, title: String, symbol: String?, action: PanelAction, large: Bool) {
+        let hovered = hoverAction == action
+        let enabled = !state.isRunning || action == .quit || action == .refresh
+        let fill = enabled
+            ? NSColor(calibratedRed: hovered ? 0.64 : 0.67, green: hovered ? 0.64 : 0.67, blue: hovered ? 0.63 : 0.66, alpha: 1)
+            : NSColor(calibratedRed: 0.68, green: 0.68, blue: 0.67, alpha: 1)
+        fill.setFill()
+        NSBezierPath(roundedRect: rect, xRadius: large ? 18 : 9, yRadius: large ? 18 : 9).fill()
+
+        let font = large ? NSFont.boldSystemFont(ofSize: 17) : NSFont.boldSystemFont(ofSize: 15)
+        let color = enabled ? ink() : ink(alpha: 0.62)
+        let symbolSize: CGFloat = large ? 20 : 0
+        let titleSize = title.size(withAttributes: [.font: font])
+        let contentWidth = titleSize.width + (symbol == nil ? 0 : symbolSize + 9)
+        var x = rect.midX - contentWidth / 2
+
+        if let symbol, let image = NSImage(systemSymbolName: symbol, accessibilityDescription: title) {
+            let imageRect = NSRect(x: x, y: rect.midY - symbolSize / 2, width: symbolSize, height: symbolSize)
+            image.draw(in: imageRect, from: .zero, operation: .sourceOver, fraction: enabled ? 1 : 0.65)
+            x += symbolSize + 9
+        }
+
+        drawText(
+            title,
+            in: NSRect(x: x, y: rect.midY - 12, width: titleSize.width + 4, height: 24),
+            font: font,
+            color: color,
+            alignment: .left
+        )
+    }
+
+    private func drawSeparator(y: CGFloat) {
+        NSColor(calibratedRed: 0.58, green: 0.58, blue: 0.57, alpha: 0.45).setFill()
+        NSRect(x: 0, y: y, width: bounds.width, height: 1).fill()
+    }
+
+    private func drawText(_ text: String, in rect: NSRect, font: NSFont, color: NSColor, alignment: NSTextAlignment) {
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = alignment
+        paragraph.lineBreakMode = .byTruncatingTail
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: color,
+            .paragraphStyle: paragraph
+        ]
+        NSString(string: text).draw(in: rect, withAttributes: attrs)
+    }
+
+    private func ink(alpha: CGFloat = 1) -> NSColor {
+        NSColor(calibratedRed: 0.18, green: 0.18, blue: 0.18, alpha: alpha)
+    }
+
+    private func bundleVersionText() -> String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        return "v\(version ?? "0.0.3")"
     }
 }
 
-final class PanelViewController: NSViewController {
-    var onRepatch: (() -> Void)?
-    var onRestore: (() -> Void)?
-    var onRefresh: (() -> Void)?
-    var onQuit: (() -> Void)?
-
-    private let versionLabel = NSTextField(labelWithString: "v0.0.3")
-    private let statusValueLabel = NSTextField(labelWithString: "检测中")
-    private let claudeVersionLabel = NSTextField(labelWithString: "-")
-    private let dotView = DotView()
-    private let repatchButton = NSButton(title: "重新汉化", target: nil, action: nil)
-    private let restoreButton = NSButton(title: "恢复原版", target: nil, action: nil)
-    private let refreshButton = NSButton(title: "刷新状态", target: nil, action: nil)
-    private let quitButton = NSButton(title: "退出", target: nil, action: nil)
-
-    override func loadView() {
-        view = RoundedPanelView(frame: NSRect(x: 0, y: 0, width: 280, height: 340))
-        view.translatesAutoresizingMaskIntoConstraints = false
-        buildUI()
-    }
-
-    func update(_ state: ClaudeCNState) {
-        statusValueLabel.stringValue = state.isRunning ? "处理中" : state.status
-        claudeVersionLabel.stringValue = state.version
-        dotView.color = state.isRunning ? .systemOrange : (state.isLocalized ? .systemGreen : .systemRed)
-        repatchButton.isEnabled = !state.isRunning
-        restoreButton.isEnabled = !state.isRunning
-        refreshButton.isEnabled = !state.isRunning
-    }
-
-    private func buildUI() {
-        let root = NSStackView()
-        root.orientation = .vertical
-        root.spacing = 0
-        root.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(root)
-
-        NSLayoutConstraint.activate([
-            root.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            root.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            root.topAnchor.constraint(equalTo: view.topAnchor),
-            root.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-
-        root.addArrangedSubview(headerView())
-        root.addArrangedSubview(SeparatorView())
-        root.addArrangedSubview(statusView())
-        root.addArrangedSubview(SeparatorView())
-        root.addArrangedSubview(actionView())
-        root.addArrangedSubview(SeparatorView())
-        root.addArrangedSubview(authorView())
-        root.addArrangedSubview(SeparatorView())
-        root.addArrangedSubview(footerView())
-    }
-
-    private func headerView() -> NSView {
-        let container = paddedContainer(top: 16, left: 16, bottom: 14, right: 16)
-        let stack = NSStackView()
-        stack.orientation = .horizontal
-        stack.alignment = .centerY
-        stack.spacing = 10
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(stack)
-        pin(stack, to: container, top: 16, left: 16, bottom: 14, right: 16)
-
-        let icon = NSImageView()
-        icon.image = NSImage(systemSymbolName: "globe.asia.australia.fill", accessibilityDescription: "ClaudeCN") ?? NSImage(systemSymbolName: "globe", accessibilityDescription: "ClaudeCN")
-        icon.contentTintColor = .systemBlue
-        icon.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            icon.widthAnchor.constraint(equalToConstant: 26),
-            icon.heightAnchor.constraint(equalToConstant: 26)
-        ])
-
-        let textStack = NSStackView()
-        textStack.orientation = .vertical
-        textStack.spacing = 3
-
-        let title = NSTextField(labelWithString: "Claude 汉化助手")
-        title.font = .boldSystemFont(ofSize: 15)
-        title.textColor = NSColor(calibratedWhite: 0.18, alpha: 1)
-
-        versionLabel.font = .systemFont(ofSize: 11, weight: .medium)
-        versionLabel.textColor = NSColor(calibratedWhite: 0.22, alpha: 1)
-
-        textStack.addArrangedSubview(title)
-        textStack.addArrangedSubview(versionLabel)
-
-        stack.addArrangedSubview(icon)
-        stack.addArrangedSubview(textStack)
-        return container
-    }
-
-    private func statusView() -> NSView {
-        let container = paddedContainer(top: 16, left: 16, bottom: 16, right: 16)
-        let grid = NSGridView()
-        grid.translatesAutoresizingMaskIntoConstraints = false
-        grid.rowSpacing = 10
-        grid.columnSpacing = 10
-        container.addSubview(grid)
-        pin(grid, to: container, top: 16, left: 16, bottom: 16, right: 16)
-
-        let statusTitle = rowTitle("状态")
-        let versionTitle = rowTitle("版本")
-        let statusStack = NSStackView()
-        statusStack.orientation = .horizontal
-        statusStack.alignment = .centerY
-        statusStack.spacing = 6
-        statusValueLabel.font = .systemFont(ofSize: 13, weight: .medium)
-        statusValueLabel.alignment = .right
-        statusStack.addArrangedSubview(dotView)
-        statusStack.addArrangedSubview(statusValueLabel)
-
-        claudeVersionLabel.font = .systemFont(ofSize: 13, weight: .medium)
-        claudeVersionLabel.alignment = .right
-
-        grid.addRow(with: [statusTitle, statusStack])
-        grid.addRow(with: [versionTitle, claudeVersionLabel])
-        grid.column(at: 0).xPlacement = .leading
-        grid.column(at: 1).xPlacement = .trailing
-        return container
-    }
-
-    private func actionView() -> NSView {
-        let container = paddedContainer(top: 14, left: 16, bottom: 14, right: 16)
-        let stack = NSStackView()
-        stack.orientation = .vertical
-        stack.spacing = 10
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(stack)
-        pin(stack, to: container, top: 14, left: 16, bottom: 14, right: 16)
-
-        configurePrimaryButton(repatchButton, symbol: "arrow.clockwise.circle.fill", action: #selector(repatch))
-        configurePrimaryButton(restoreButton, symbol: "arrow.uturn.backward.circle", action: #selector(restore))
-
-        stack.addArrangedSubview(repatchButton)
-        stack.addArrangedSubview(restoreButton)
-        return container
-    }
-
-    private func authorView() -> NSView {
-        let container = paddedContainer(top: 13, left: 16, bottom: 13, right: 16)
-        let stack = NSStackView()
-        stack.orientation = .vertical
-        stack.alignment = .centerX
-        stack.spacing = 5
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(stack)
-        pin(stack, to: container, top: 13, left: 16, bottom: 13, right: 16)
-
-        let author = smallCentered("作者：OneBigMoon")
-        let thanks = smallCentered("致谢：Winhao学AI / Win-Hao/ClaudeCN")
-        let free = smallCentered("本软件完全免费，不可商业化")
-        free.textColor = .systemOrange
-        let warn = smallCentered("付费获取即被骗，请举报")
-        warn.textColor = .systemRed
-
-        stack.addArrangedSubview(author)
-        stack.addArrangedSubview(thanks)
-        stack.addArrangedSubview(free)
-        stack.addArrangedSubview(warn)
-        return container
-    }
-
-    private func footerView() -> NSView {
-        let container = paddedContainer(top: 12, left: 16, bottom: 12, right: 16)
-        let stack = NSStackView()
-        stack.orientation = .horizontal
-        stack.alignment = .centerY
-        stack.distribution = .equalSpacing
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(stack)
-        pin(stack, to: container, top: 12, left: 16, bottom: 12, right: 16)
-
-        configureFooterButton(refreshButton, action: #selector(refresh))
-        configureFooterButton(quitButton, action: #selector(quit))
-
-        stack.addArrangedSubview(refreshButton)
-        stack.addArrangedSubview(quitButton)
-        return container
-    }
-
-    private func paddedContainer(top: CGFloat, left: CGFloat, bottom: CGFloat, right: CGFloat) -> NSView {
-        let view = NSView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }
-
-    private func pin(_ child: NSView, to parent: NSView, top: CGFloat, left: CGFloat, bottom: CGFloat, right: CGFloat) {
-        NSLayoutConstraint.activate([
-            child.topAnchor.constraint(equalTo: parent.topAnchor, constant: top),
-            child.leadingAnchor.constraint(equalTo: parent.leadingAnchor, constant: left),
-            child.trailingAnchor.constraint(equalTo: parent.trailingAnchor, constant: -right),
-            child.bottomAnchor.constraint(equalTo: parent.bottomAnchor, constant: -bottom)
-        ])
-    }
-
-    private func rowTitle(_ text: String) -> NSTextField {
-        let label = NSTextField(labelWithString: text)
-        label.font = .boldSystemFont(ofSize: 14)
-        label.textColor = NSColor(calibratedWhite: 0.18, alpha: 1)
-        return label
-    }
-
-    private func smallCentered(_ text: String) -> NSTextField {
-        let label = NSTextField(labelWithString: text)
-        label.font = .systemFont(ofSize: 12, weight: .semibold)
-        label.alignment = .center
-        label.textColor = NSColor(calibratedWhite: 0.22, alpha: 1)
-        return label
-    }
-
-    private func configurePrimaryButton(_ button: NSButton, symbol: String, action: Selector) {
-        button.target = self
-        button.action = action
-        button.font = .systemFont(ofSize: 14, weight: .bold)
-        button.bezelStyle = .rounded
-        button.controlSize = .large
-        button.image = NSImage(systemSymbolName: symbol, accessibilityDescription: button.title)
-        button.imagePosition = .imageLeading
-        button.contentTintColor = NSColor(calibratedWhite: 0.18, alpha: 1)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.heightAnchor.constraint(equalToConstant: 38).isActive = true
-    }
-
-    private func configureFooterButton(_ button: NSButton, action: Selector) {
-        button.target = self
-        button.action = action
-        button.font = .systemFont(ofSize: 12, weight: .bold)
-        button.bezelStyle = .rounded
-        button.controlSize = .regular
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.widthAnchor.constraint(equalToConstant: 76).isActive = true
-        button.heightAnchor.constraint(equalToConstant: 28).isActive = true
-    }
-
-    @objc private func repatch() { onRepatch?() }
-    @objc private func restore() { onRestore?() }
-    @objc private func refresh() { onRefresh?() }
-    @objc private func quit() { onQuit?() }
-}
-
-final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
-    private let popover = NSPopover()
-    private let panel = PanelViewController()
+    private var panelWindow: ClaudeCNPanelWindow!
+    private var panelView: ClaudeCNPanelView!
+    private var outsideClickMonitor: Any?
     private var state = ClaudeCNState()
     private let logURL = FileManager.default.homeDirectoryForCurrentUser
         .appendingPathComponent("Library/Logs/ClaudeCN.log")
@@ -295,30 +268,83 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         statusItem.button?.image = NSImage(systemSymbolName: "globe.asia.australia.fill", accessibilityDescription: "ClaudeCN")
         statusItem.button?.imagePosition = .imageLeading
         statusItem.button?.target = self
-        statusItem.button?.action = #selector(togglePopover)
+        statusItem.button?.action = #selector(togglePanel)
         statusItem.button?.toolTip = "Claude 汉化助手"
 
-        panel.onRepatch = { [weak self] in self?.runApply() }
-        panel.onRestore = { [weak self] in self?.runRestore() }
-        panel.onRefresh = { [weak self] in self?.refreshStatus(showAlert: false) }
-        panel.onQuit = { NSApp.terminate(nil) }
+        panelView = ClaudeCNPanelView(frame: NSRect(x: 0, y: 0, width: 320, height: 494))
+        panelView.onAction = { [weak self] action in
+            switch action {
+            case .repatch:
+                self?.runApply()
+            case .restore:
+                self?.runRestore()
+            case .refresh:
+                self?.refreshStatus(showAlert: false)
+            case .quit:
+                NSApp.terminate(nil)
+            }
+        }
 
-        popover.contentSize = NSSize(width: 280, height: 340)
-        popover.behavior = .transient
-        popover.delegate = self
-        popover.contentViewController = panel
+        panelWindow = ClaudeCNPanelWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 320, height: 494),
+            styleMask: [.borderless],
+            backing: .buffered,
+            defer: false
+        )
+        panelWindow.contentView = panelView
+        panelWindow.backgroundColor = .clear
+        panelWindow.isOpaque = false
+        panelWindow.alphaValue = 1
+        panelWindow.hasShadow = true
+        panelWindow.level = .popUpMenu
+        panelWindow.hidesOnDeactivate = false
+        panelWindow.collectionBehavior = [.canJoinAllSpaces, .transient]
+        panelWindow.isReleasedWhenClosed = false
 
         refreshStatus(showAlert: false)
     }
 
-    @objc private func togglePopover() {
+    @objc private func togglePanel() {
         guard let button = statusItem.button else { return }
-        if popover.isShown {
-            popover.performClose(nil)
+        if panelWindow.isVisible {
+            hidePanel()
         } else {
-            panel.update(state)
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            refreshStatus(showAlert: false)
+            panelView.state = state
+            showPanel(relativeTo: button)
+        }
+    }
+
+    private func showPanel(relativeTo button: NSStatusBarButton) {
+        let panelSize = panelWindow.frame.size
+        var anchor = NSEvent.mouseLocation
+        if let window = button.window {
+            let buttonFrame = button.convert(button.bounds, to: nil)
+            let screenFrame = window.convertToScreen(buttonFrame)
+            if screenFrame.midX.isFinite && screenFrame.minY.isFinite {
+                anchor = NSPoint(x: screenFrame.midX, y: screenFrame.minY)
+            }
+        }
+        let screen = NSScreen.screens.first { NSMouseInRect(anchor, $0.frame, false) } ?? NSScreen.main
+        let frame = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+        let x = min(max(anchor.x - panelSize.width / 2, frame.minX + 8), frame.maxX - panelSize.width - 8)
+        let proposedY = anchor.y - panelSize.height - 8
+        let y = proposedY < frame.minY ? frame.maxY - panelSize.height - 8 : min(proposedY, frame.maxY - panelSize.height - 8)
+        panelWindow.setFrameOrigin(NSPoint(x: x, y: y))
+        panelWindow.makeKeyAndOrderFront(nil)
+        panelWindow.orderFrontRegardless()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            self.outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+                DispatchQueue.main.async { self?.hidePanel() }
+            }
+        }
+    }
+
+    private func hidePanel() {
+        panelWindow.orderOut(nil)
+        if let outsideClickMonitor {
+            NSEvent.removeMonitor(outsideClickMonitor)
+            self.outsideClickMonitor = nil
         }
     }
 
@@ -331,14 +357,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                 self.appendLog(output)
                 self.state = self.parseStatus(output)
                 self.state.isRunning = false
-                self.panel.update(self.state)
+                self.panelView.state = self.state
+                self.statusItem.button?.title = "ClaudeCN"
                 if showAlert { self.showAlert(title: "ClaudeCN 状态", message: output) }
             case .failure(let error):
                 self.appendLog(error.localizedDescription)
                 self.state.status = "检查失败"
                 self.state.isLocalized = false
                 self.state.isRunning = false
-                self.panel.update(self.state)
+                self.panelView.state = self.state
+                self.statusItem.button?.title = "ClaudeCN"
                 if showAlert { self.showAlert(title: "检查失败", message: error.localizedDescription) }
             }
         }
@@ -357,7 +385,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                 self.appendLog(error.localizedDescription)
                 self.state.status = "汉化失败"
                 self.state.isRunning = false
-                self.panel.update(self.state)
+                self.panelView.state = self.state
+                self.statusItem.button?.title = "ClaudeCN"
                 self.showAlert(title: "汉化失败", message: error.localizedDescription)
             }
         }
@@ -376,7 +405,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                 self.appendLog(error.localizedDescription)
                 self.state.status = "恢复失败"
                 self.state.isRunning = false
-                self.panel.update(self.state)
+                self.panelView.state = self.state
+                self.statusItem.button?.title = "ClaudeCN"
                 self.showAlert(title: "恢复失败", message: error.localizedDescription)
             }
         }
@@ -385,7 +415,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private func setBusy(_ busy: Bool) {
         DispatchQueue.main.async {
             self.state.isRunning = busy
-            self.panel.update(self.state)
+            self.panelView.state = self.state
             self.statusItem.button?.title = busy ? "ClaudeCN…" : "ClaudeCN"
         }
     }
@@ -414,14 +444,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                 guard let root = self.toolRootURL() else {
                     throw RunnerError.missingToolRoot
                 }
-
-                let output: String
-                if requiresAdmin {
-                    output = try self.runWithAdmin(root: root, arguments: arguments)
-                } else {
-                    output = try self.runWithoutAdmin(root: root, arguments: arguments)
-                }
-
+                let output = requiresAdmin
+                    ? try self.runWithAdmin(root: root, arguments: arguments)
+                    : try self.runWithoutAdmin(root: root, arguments: arguments)
                 DispatchQueue.main.async { completion(.success(output)) }
             } catch {
                 DispatchQueue.main.async { completion(.failure(error)) }
