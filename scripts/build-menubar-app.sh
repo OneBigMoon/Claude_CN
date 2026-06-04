@@ -2,7 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP_NAME="ClaudeCNMenuBar"
+APP_NAME="ClaudeCN"
+EXECUTABLE_NAME="ClaudeCN"
 APP_DIR="$ROOT_DIR/dist/$APP_NAME.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
@@ -24,9 +25,9 @@ swiftc \
   -framework AppKit \
   -framework Foundation \
   "$SOURCE_FILE" \
-  -o "$MACOS_DIR/$APP_NAME"
+  -o "$MACOS_DIR/$EXECUTABLE_NAME"
 
-chmod +x "$MACOS_DIR/$APP_NAME"
+chmod +x "$MACOS_DIR/$EXECUTABLE_NAME"
 
 mkdir -p "$TOOL_DIR/scripts" "$TOOL_DIR/data"
 rsync -a --delete "$ROOT_DIR/scripts/" "$TOOL_DIR/scripts/"

@@ -14,7 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.button?.title = "ClaudeCN"
-        statusItem.button?.toolTip = "Claude Desktop 中文化菜单栏工具"
+        statusItem.button?.toolTip = "Claude 汉化助手"
 
         rebuildMenu()
         refreshStatus(showAlert: false)
@@ -23,7 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func rebuildMenu() {
         let menu = NSMenu()
 
-        let title = NSMenuItem(title: "ClaudeCN 菜单栏工具", action: nil, keyEquivalent: "")
+        let title = NSMenuItem(title: "Claude 汉化助手", action: nil, keyEquivalent: "")
         title.isEnabled = false
         menu.addItem(title)
 
@@ -96,7 +96,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func openProjectPage() {
-        if let url = URL(string: "https://github.com/OneBigMoon/claude-desktop-cn") {
+        if let url = URL(string: "https://github.com/OneBigMoon/Claude_CN") {
             NSWorkspace.shared.open(url)
         }
     }

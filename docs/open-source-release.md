@@ -14,8 +14,8 @@ npm run menubar:build
 
 构建结果：
 
-- `dist/ClaudeCNMenuBar.app`
-- `dist/ClaudeCNMenuBar-macos.zip`
+- `dist/ClaudeCN.app`
+- `dist/ClaudeCN-macos.zip`
 
 菜单栏 App 会内置：
 
@@ -41,7 +41,7 @@ npm run dist:dmg
 npm run menubar:build
 gh release create v0.0.1 \
   dist/claude-desktop-cn-macos-m5-0.0.1.dmg \
-  dist/ClaudeCNMenuBar-macos.zip \
+  dist/ClaudeCN-macos.zip \
   --title "claude-desktop-cn v0.0.1" \
   --notes "Claude Desktop 中文化补丁工具，新增 Swift 菜单栏 App。"
 ```

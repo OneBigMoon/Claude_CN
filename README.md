@@ -73,8 +73,8 @@ npm run menubar:build
 
 生成结果：
 
-- `dist/ClaudeCNMenuBar.app`
-- `dist/ClaudeCNMenuBar-macos.zip`
+- `dist/ClaudeCN.app`
+- `dist/ClaudeCN-macos.zip`
 
 菜单栏 App 提供：
 

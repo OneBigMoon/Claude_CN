@@ -6,15 +6,15 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>zh_CN</string>
   <key>CFBundleDisplayName</key>
-  <string>ClaudeCN</string>
+  <string>Claude 汉化助手</string>
   <key>CFBundleExecutable</key>
-  <string>ClaudeCNMenuBar</string>
+  <string>ClaudeCN</string>
   <key>CFBundleIdentifier</key>
-  <string>com.onebigmoon.claudecn.menubar</string>
+  <string>com.claudecn.app</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleName</key>
-  <string>ClaudeCN</string>
+  <string>Claude 汉化助手</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
