@@ -197,6 +197,15 @@ function removeIfExists(file) {
   }
 }
 
+function cleanBundleRootJunk(app) {
+  for (const name of ["var", "tmp", ".DS_Store"]) {
+    const target = path.join(app, name);
+    if (!fs.existsSync(target)) continue;
+    fs.rmSync(target, { recursive: true, force: true });
+    log(`已清理 bundle 临时项：${target}`);
+  }
+}
+
 function removePatchedLocaleFiles(app) {
   const resources = path.join(app, "Contents", "Resources");
   const files = [
@@ -225,10 +234,14 @@ function resetLocaleConfigs() {
       log(`已恢复语言配置：${file}`);
     }
   }
-  try {
-    execFileSync("defaults", ["delete", "com.anthropic.claudefordesktop", "AppleLanguages"], { stdio: "ignore" });
-    log("已移除 macOS Claude AppleLanguages 覆盖。");
-  } catch {}
+  let removedAppleLanguages = false;
+  for (const domain of ["com.anthropic.claudefordesktop", "com.anthropic.Claude"]) {
+    try {
+      execFileSync("defaults", ["delete", domain, "AppleLanguages"], { stdio: "ignore" });
+      removedAppleLanguages = true;
+    } catch {}
+  }
+  if (removedAppleLanguages) log("已移除 macOS Claude AppleLanguages 覆盖。");
 }
 
 function restore() {
@@ -253,6 +266,7 @@ function restore() {
 
   removePatchedLocaleFiles(app);
   resetLocaleConfigs();
+  cleanBundleRootJunk(app);
 
   try {
     spawnSync("codesign", ["--force", "--deep", "--sign", "-", app], { stdio: "inherit" });

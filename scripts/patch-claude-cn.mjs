@@ -48,6 +48,15 @@ function backup(file) {
   fs.copyFileSync(file, path.join(backupDir, safeName));
 }
 
+function cleanBundleRootJunk() {
+  for (const name of ["var", "tmp", ".DS_Store"]) {
+    const target = path.join(appPath, name);
+    if (!fs.existsSync(target)) continue;
+    fs.rmSync(target, { recursive: true, force: true });
+    log(`已清理 bundle 临时项: ${target}`);
+  }
+}
+
 function replaceText(text, replacements, label) {
   let changed = 0;
   for (const [from, to] of replacements) {
@@ -1213,12 +1222,12 @@ async function patchAsarMainProcess() {
 
 function signPatchedApp() {
   const entitlements = path.join(repoRoot, "scripts", "claude-entitlements.plist");
+  cleanBundleRootJunk();
   execFileSync("codesign", ["--force", "--deep", "--options", "runtime", "--entitlements", entitlements, "--sign", "-", appPath], { stdio: "ignore" });
   log("已完成本地签名");
 }
 
 function writeLocaleConfigs() {
-  let effectiveLocale = "zh-CN";
   for (const appSupportName of ["Claude", "Claude-3p"]) {
     const dir = path.join(os.homedir(), "Library", "Application Support", appSupportName);
     const file = path.join(dir, "config.json");
@@ -1228,15 +1237,17 @@ function writeLocaleConfigs() {
         config = JSON.parse(fs.readFileSync(file, "utf8"));
       } catch {}
     }
-    if (!config.locale) config.locale = "zh-CN";
-    if (appSupportName === "Claude-3p" || effectiveLocale === "zh-CN") effectiveLocale = config.locale;
+    config.locale = "zh-CN";
+    delete config.language;
     delete config.gated_messages;
     writeJson(file, config);
     log(`已写入 locale 配置: ${file}`);
   }
   try {
-    const languages = effectiveLocale === "zh-CN" ? ["zh-CN", "zh-Hans", "en-US"] : [effectiveLocale, "en-US"];
-    execFileSync("defaults", ["write", "com.anthropic.Claude", "AppleLanguages", "-array", ...languages], { stdio: "ignore" });
+    const languages = ["zh-CN", "zh-Hans", "en-US"];
+    for (const domain of ["com.anthropic.claudefordesktop", "com.anthropic.Claude"]) {
+      execFileSync("defaults", ["write", domain, "AppleLanguages", "-array", ...languages], { stdio: "ignore" });
+    }
     log(`已写入 macOS Claude AppleLanguages: ${languages.join(", ")}`);
   } catch {}
 }
