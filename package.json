@@ -1,6 +1,6 @@
 {
   "name": "claude-desktop-cn",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Claude Desktop 全部汉化补丁工具（macOS M5）",
   "type": "module",
   "private": false,
