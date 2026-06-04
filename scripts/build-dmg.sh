@@ -50,12 +50,12 @@ claude-desktop-cn（macOS M5）全部汉化版本
 
 1) 双击 claude-desktop-cn-installer.command
 2) 输入管理员密码
-3) 自动打补丁并重启 Claude
+3) 自动汉化、重启 Claude，并打开查看效果
 
 路径参数已默认使用 /Applications/Claude.app，
 如你的 Claude 安装在其他位置，请手动运行以下命令：
 
-node scripts/patch-claude-cn.mjs --app /你的/Claude.app --restart
+node scripts/claude-cn.mjs apply --app /你的/Claude.app
 EOF
 
 hdiutil create \

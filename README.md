@@ -23,6 +23,28 @@
 npm install
 ```
 
+### 一键工具（推荐）
+
+给默认路径 `/Applications/Claude.app` 一键汉化、自动重启 Claude，并打开查看效果：
+
+```bash
+npm run cn
+```
+
+查看当前汉化/语言状态：
+
+```bash
+npm run cn -- status
+```
+
+指定 Claude.app 路径：
+
+```bash
+npm run cn -- apply --app /Applications/Claude.app
+```
+
+### 底层补丁命令（维护者调试用）
+
 给默认路径 `/Applications/Claude.app` 打补丁并自动重启：
 
 ```bash
@@ -41,13 +63,36 @@ npm run patch:no-restart
 node scripts/patch-claude-cn.mjs --app /Applications/Claude.app --restart
 ```
 
+### Swift 菜单栏应用（给普通用户推荐）
+
+如果希望像普通 macOS 工具一样常驻菜单栏，可以构建 Swift 菜单栏 App：
+
+```bash
+npm run menubar:build
+```
+
+生成结果：
+
+- `dist/ClaudeCNMenuBar.app`
+- `dist/ClaudeCNMenuBar-macos.zip`
+
+菜单栏 App 提供：
+
+- 一键汉化并重启 Claude。
+- 选择自定义 `Claude.app` 路径后汉化。
+- 检查当前汉化/语言状态。
+- 打开 Claude。
+- 打开运行日志。
+
+这个 App 会把当前仓库的 `scripts/`、`data/`、`node_modules/` 和可用的 Node 运行时一起打包进去，方便其它电脑直接使用。正式开源发布流程见 `docs/open-source-release.md`。
+
 ### DMG 一键安装（推荐，最省心）
 
 你只需要执行这三步：
 
 1. 下载 `Releases` 中的 `claude-desktop-cn-macos-m5-0.0.1.dmg`（带版本号的这个才是这个项目的官方包）。
 2. 解压后，双击 `claude-desktop-cn-installer.command`（仅此文件可一键安装）。
-3. macOS 会弹出授权框，输入管理员密码即可自动完成汉化并重启 Claude。
+3. macOS 会弹出授权框，输入管理员密码即可自动完成汉化、重启 Claude，并打开查看效果。
 
 如果你在安装后看不到变化：
 
@@ -86,8 +131,8 @@ npm run release:dmg
 ## 补丁内容
 
 - 覆盖 `ion-dist/i18n/zh-CN.json` 的完整中文资源。
-- 补齐前端 chunk 里的硬编码文本，例如项目页、计划任务页、侧栏、模式切换、网关配置等。
-- 补齐 macOS 菜单中的 `Services`、`Hide Claude`、`Hide Others`、`Show All`、`Minimize`、`Bring All to Front` 和开发者菜单项。
+- 补齐前端和设置页中的动态文案，例如项目页、计划任务页、侧栏、模式切换、网关配置、Claude Code、Cowork、扩展高级设置等。
+- 按当前语言条件式补齐 macOS 原生菜单，中文模式显示中文菜单，英文模式保留原版英文。
 - 写入 `zh-CN.lproj` / `zh_CN.lproj` 的 `InfoPlist.strings`。
 - 重打包 `app.asar` 后自动更新 5 个 `Info.plist` 中的 `ElectronAsarIntegrity` hash。
 
