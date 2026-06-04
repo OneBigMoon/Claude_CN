@@ -7,6 +7,8 @@ VERSION="$(node -p "require('./package.json').version")"
 TAG="v$VERSION"
 DMG_NAME="claude-desktop-cn-macos-m5-${VERSION}.dmg"
 DMG_PATH="${ROOT_DIR}/dist/${DMG_NAME}"
+MENUBAR_ZIP_NAME="ClaudeCN-macos.zip"
+MENUBAR_ZIP_PATH="${ROOT_DIR}/dist/${MENUBAR_ZIP_NAME}"
 RAW_REMOTE="$(git -C "$ROOT_DIR" remote get-url origin)"
 GH_REPO="${RAW_REMOTE#https://github.com/}"
 GH_REPO="${GH_REPO#git@github.com:}"
@@ -36,16 +38,20 @@ if ! git -C "$ROOT_DIR" rev-parse "$TAG" >/dev/null 2>&1; then
 fi
 
 bash "${ROOT_DIR}/scripts/build-dmg.sh"
+bash "${ROOT_DIR}/scripts/build-menubar-app.sh"
 
 if gh -R "$GH_REPO" release view "$TAG" >/dev/null 2>&1; then
-  gh -R "$GH_REPO" release upload "$TAG" "$DMG_PATH" --clobber
+  gh -R "$GH_REPO" release upload "$TAG" "$DMG_PATH" "$MENUBAR_ZIP_PATH" --clobber
 else
-  gh -R "$GH_REPO" release create "$TAG" "$DMG_PATH" \
+  gh -R "$GH_REPO" release create "$TAG" "$DMG_PATH" "$MENUBAR_ZIP_PATH" \
     --title "claude-desktop-cn macOS M5 全部汉化版本 ${TAG}" \
     --notes "claude-desktop-cn macOS M5 全部汉化版本 ${TAG}。
 
-下载链接：dist/${DMG_NAME}
-直接解压后双击 claude-desktop-cn-installer.command 即可。
+包含产物：
+- ${DMG_NAME}：传统 DMG 安装包。
+- ${MENUBAR_ZIP_NAME}：Swift 菜单栏应用 ClaudeCN.app。
+
+推荐普通用户下载 ${MENUBAR_ZIP_NAME}，解压后运行 ClaudeCN.app。
 "
 fi
 

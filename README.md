@@ -5,7 +5,7 @@
 
 当前作者：`OneBigMoon`
 
-当前作者版本号：`v0.0.1`
+当前作者版本号：`v0.0.2`
 
 当前维护者说明：本人是 M5 的笔记本，在 M4 上测试没有问题。M5 上遇到了一些奇奇怪怪的问题，于是参考大神的代码进行调整，并把遗漏的页面、菜单和硬编码文本继续补齐。
 
@@ -90,7 +90,7 @@ npm run menubar:build
 
 你只需要执行这三步：
 
-1. 下载 `Releases` 中的 `claude-desktop-cn-macos-m5-0.0.1.dmg`（带版本号的这个才是这个项目的官方包）。
+1. 下载 `Releases` 中的 `claude-desktop-cn-macos-m5-0.0.2.dmg`（带版本号的这个才是这个项目的官方包），或者下载 `ClaudeCN-macos.zip` 菜单栏应用。
 2. 解压后，双击 `claude-desktop-cn-installer.command`（仅此文件可一键安装）。
 3. macOS 会弹出授权框，输入管理员密码即可自动完成汉化、重启 Claude，并打开查看效果。
 
@@ -107,7 +107,7 @@ npm run dist:dmg
 
 脚本会生成：
 
-- `dist/claude-desktop-cn-macos-m5-0.0.1.dmg`
+- `dist/claude-desktop-cn-macos-m5-0.0.2.dmg`
 - DMG 内含：`claude-desktop-cn-installer.command`（兼容保留：`Claude_CN_Installer.command`）、`README.md`、`scripts/`、`data/`、`node_modules/`
 
 ### 给作者/维护者的一键发布
@@ -121,12 +121,12 @@ npm run release:dmg
 它会：
 
 - 检查工作区是否干净。
-- 以版本号创建/推送 `v0.0.1` 标签。
-- 运行打包并将 `dist/claude-desktop-cn-macos-m5-0.0.1.dmg` 上传到 GitHub Releases。
+- 以版本号创建/推送 `v0.0.2` 标签。
+- 运行打包并将 `dist/claude-desktop-cn-macos-m5-0.0.2.dmg` 和 `dist/ClaudeCN-macos.zip` 上传到 GitHub Releases。
 
 ## Releases 建议
 
-建议用 `v` 打头的 tag（例如 `v0.0.1`）打包发布，这样 GitHub Releases 会按版本展示下载链接。
+建议用 `v` 打头的 tag（例如 `v0.0.2`）打包发布，这样 GitHub Releases 会按版本展示下载链接。
 
 ## 补丁内容
 
