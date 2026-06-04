@@ -6,6 +6,9 @@ struct ClaudeCNState {
     var version: String = "-"
     var compatibleVersion: String = "1.10628.x"
     var compatibility: String = "检测中"
+    var updateStatus: String = "检查更新"
+    var latestAppVersion: String = "-"
+    var hasAppUpdate: Bool = false
     var isCompatible: Bool = true
     var isLocalized: Bool = false
     var isRunning: Bool = false
@@ -15,6 +18,8 @@ enum PanelAction {
     case repatch
     case restore
     case refresh
+    case update
+    case github
     case quit
 }
 
@@ -29,7 +34,7 @@ final class ClaudeCNPanelView: NSView {
     }
     var onAction: ((PanelAction) -> Void)?
 
-    private let size = NSSize(width: 320, height: 532)
+    private let size = NSSize(width: 320, height: 574)
     private var hoverAction: PanelAction? {
         didSet { needsDisplay = true }
     }
@@ -40,8 +45,10 @@ final class ClaudeCNPanelView: NSView {
 
     private var repatchRect: NSRect { NSRect(x: 28, y: 256, width: 264, height: 44) }
     private var restoreRect: NSRect { NSRect(x: 28, y: 310, width: 264, height: 44) }
-    private var refreshRect: NSRect { NSRect(x: 28, y: 486, width: 92, height: 34) }
-    private var quitRect: NSRect { NSRect(x: 200, y: 486, width: 92, height: 34) }
+    private var authorRect: NSRect { NSRect(x: 30, y: 392, width: 260, height: 18) }
+    private var updateRect: NSRect { NSRect(x: 28, y: 486, width: 264, height: 30) }
+    private var refreshRect: NSRect { NSRect(x: 28, y: 530, width: 92, height: 32) }
+    private var quitRect: NSRect { NSRect(x: 200, y: 530, width: 92, height: 32) }
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -88,6 +95,8 @@ final class ClaudeCNPanelView: NSView {
         if state.isRunning { return nil }
         if repatchRect.contains(point) { return state.isCompatible ? .repatch : nil }
         if restoreRect.contains(point) { return .restore }
+        if authorRect.contains(point) { return .github }
+        if updateRect.contains(point) { return .update }
         if refreshRect.contains(point) { return .refresh }
         if quitRect.contains(point) { return .quit }
         return nil
@@ -102,7 +111,9 @@ final class ClaudeCNPanelView: NSView {
         drawActions()
         drawSeparator(y: 374)
         drawAuthor()
-        drawSeparator(y: 474)
+        drawSeparator(y: 482)
+        drawUpdate()
+        drawSeparator(y: 522)
         drawFooter()
     }
 
@@ -198,10 +209,14 @@ final class ClaudeCNPanelView: NSView {
     }
 
     private func drawAuthor() {
-        drawText("作者：OneBigMoon", in: NSRect(x: 30, y: 392, width: 260, height: 18), font: .systemFont(ofSize: 13, weight: .bold), color: ink(), alignment: .center)
-        drawText("致谢：Winhao学AI / Win-Hao/ClaudeCN", in: NSRect(x: 30, y: 416, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .semibold), color: ink(alpha: 0.92), alignment: .center)
-        drawText("本软件完全免费，不可商业化", in: NSRect(x: 30, y: 440, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .bold), color: .systemOrange, alignment: .center)
-        drawText("付费获取即被骗，请举报", in: NSRect(x: 30, y: 462, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .bold), color: .systemRed, alignment: .center)
+        drawText("作者：OneBigMoon", in: authorRect, font: .systemFont(ofSize: 13, weight: .bold), color: hoverAction == .github ? .systemBlue : ink(), alignment: .center)
+        drawText("本软件完全免费，不可商业化", in: NSRect(x: 30, y: 422, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .bold), color: .systemOrange, alignment: .center)
+        drawText("付费获取即被骗，请举报", in: NSRect(x: 30, y: 448, width: 260, height: 18), font: .systemFont(ofSize: 12.5, weight: .bold), color: .systemRed, alignment: .center)
+    }
+
+    private func drawUpdate() {
+        let title = state.hasAppUpdate ? "发现 \(state.latestAppVersion)，点击下载" : state.updateStatus
+        drawButton(rect: updateRect, title: title, symbol: state.hasAppUpdate ? "arrow.down.circle.fill" : "sparkle.magnifyingglass", action: .update, large: false)
     }
 
     private func drawFooter() {
@@ -219,9 +234,9 @@ final class ClaudeCNPanelView: NSView {
         fill.setFill()
         NSBezierPath(roundedRect: rect, xRadius: large ? 18 : 9, yRadius: large ? 18 : 9).fill()
 
-        let font = large ? NSFont.boldSystemFont(ofSize: 17) : NSFont.boldSystemFont(ofSize: 15)
+        let font = large ? NSFont.boldSystemFont(ofSize: 17) : NSFont.boldSystemFont(ofSize: action == .update ? 13 : 15)
         let color = enabled ? ink() : ink(alpha: 0.62)
-        let symbolSize: CGFloat = large ? 20 : 0
+        let symbolSize: CGFloat = symbol == nil ? 0 : (large ? 20 : 14)
         let titleSize = title.size(withAttributes: [.font: font])
         let contentWidth = titleSize.width + (symbol == nil ? 0 : symbolSize + 9)
         var x = rect.midX - contentWidth / 2
@@ -288,7 +303,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.button?.action = #selector(togglePanel)
         statusItem.button?.toolTip = "Claude 汉化助手"
 
-        panelView = ClaudeCNPanelView(frame: NSRect(x: 0, y: 0, width: 320, height: 532))
+        panelView = ClaudeCNPanelView(frame: NSRect(x: 0, y: 0, width: 320, height: 574))
         panelView.onAction = { [weak self] action in
             switch action {
             case .repatch:
@@ -297,13 +312,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.runRestore()
             case .refresh:
                 self?.refreshStatus(showAlert: false)
+                self?.checkForUpdates()
+            case .update:
+                self?.openLatestRelease()
+            case .github:
+                self?.openGitHubHome()
             case .quit:
                 NSApp.terminate(nil)
             }
         }
 
         panelWindow = ClaudeCNPanelWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 320, height: 532),
+            contentRect: NSRect(x: 0, y: 0, width: 320, height: 574),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
@@ -319,6 +339,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panelWindow.isReleasedWhenClosed = false
 
         refreshStatus(showAlert: false)
+        checkForUpdates()
     }
 
     @objc private func togglePanel() {
@@ -387,6 +408,61 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 if showAlert { self.showAlert(title: "检查失败", message: error.localizedDescription) }
             }
         }
+    }
+
+    private func checkForUpdates() {
+        state.updateStatus = "正在检查更新..."
+        panelView.state = state
+        guard let url = URL(string: "https://api.github.com/repos/OneBigMoon/Claude_CN/releases/latest") else { return }
+        URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                if let error {
+                    self.appendLog("检查更新失败：\(error.localizedDescription)")
+                    self.state.updateStatus = "检查更新失败，点击打开 Release"
+                    self.state.hasAppUpdate = false
+                    self.panelView.state = self.state
+                    return
+                }
+                guard let data,
+                      let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      let tag = object["tag_name"] as? String else {
+                    self.state.updateStatus = "无法读取更新信息，点击打开 Release"
+                    self.state.hasAppUpdate = false
+                    self.panelView.state = self.state
+                    return
+                }
+                let latest = tag.trimmingCharacters(in: CharacterSet(charactersIn: "v"))
+                let current = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
+                self.state.latestAppVersion = "v\(latest)"
+                self.state.hasAppUpdate = self.compareVersion(latest, current) == .orderedDescending
+                self.state.updateStatus = self.state.hasAppUpdate ? "发现新版本 v\(latest)" : "已是最新版 v\(current)"
+                self.panelView.state = self.state
+            }
+        }.resume()
+    }
+
+    private func openLatestRelease() {
+        guard let url = URL(string: "https://github.com/OneBigMoon/Claude_CN/releases/latest") else { return }
+        NSWorkspace.shared.open(url)
+    }
+
+    private func openGitHubHome() {
+        guard let url = URL(string: "https://github.com/OneBigMoon/Claude_CN") else { return }
+        NSWorkspace.shared.open(url)
+    }
+
+    private func compareVersion(_ lhs: String, _ rhs: String) -> ComparisonResult {
+        let left = lhs.split(separator: ".").map { Int($0) ?? 0 }
+        let right = rhs.split(separator: ".").map { Int($0) ?? 0 }
+        let count = max(left.count, right.count)
+        for index in 0..<count {
+            let l = index < left.count ? left[index] : 0
+            let r = index < right.count ? right[index] : 0
+            if l > r { return .orderedDescending }
+            if l < r { return .orderedAscending }
+        }
+        return .orderedSame
     }
 
     private func runApply() {
