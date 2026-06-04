@@ -2,8 +2,8 @@
 
 这个仓库可以同时发布两类产物：
 
-- `DMG 安装包`：适合只想双击安装脚本的用户。
-- `Swift 菜单栏 App`：适合希望常驻菜单栏、一键汉化/检查状态/打开 Claude 的用户。
+- `DMG 安装包`：打开后直接提供 `ClaudeCN.app`，适合普通 macOS 用户。
+- `Swift 菜单栏 App zip`：适合希望直接下载 `ClaudeCN.app` 压缩包的用户。
 
 ## 本地构建菜单栏 App
 
@@ -39,10 +39,10 @@ gh repo create OneBigMoon/claude-desktop-cn --public --source=. --remote=origin 
 ```bash
 npm run dist:dmg
 npm run menubar:build
-gh release create v0.0.2 \
-  dist/claude-desktop-cn-macos-m5-0.0.2.dmg \
+gh release create v0.0.3 \
+  dist/claude-desktop-cn-macos-m5-0.0.3.dmg \
   dist/ClaudeCN-macos.zip \
-  --title "claude-desktop-cn v0.0.2" \
+  --title "claude-desktop-cn v0.0.3" \
   --notes "Claude Desktop 中文化补丁工具，新增 Swift 菜单栏 App。"
 ```
 

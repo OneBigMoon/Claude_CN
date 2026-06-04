@@ -8,7 +8,7 @@ APP_NAME="claude-desktop-cn-macos-m5"
 DMG_NAME="${APP_NAME}-${VERSION}.dmg"
 OUTPUT_DIR="${ROOT_DIR}/dist"
 STAGE_DIR="${OUTPUT_DIR}/stage"
-INSTALLER="${ROOT_DIR}/claude-desktop-cn-installer.command"
+MENUBAR_APP="${OUTPUT_DIR}/ClaudeCN.app"
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
   echo "build-dmg 仅支持在 macOS 上运行（需要 hdiutil）。" >&2
@@ -25,37 +25,48 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ ! -x "$INSTALLER" ]]; then
-  echo "未找到安装脚本：$INSTALLER" >&2
-  exit 1
-fi
-
 if [[ ! -d "$ROOT_DIR/node_modules" ]]; then
   echo "未检测到 node_modules。请先执行 npm install。" >&2
   exit 1
 fi
 
 rm -rf "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR"
+
+bash "$ROOT_DIR/scripts/build-menubar-app.sh"
+
+if [[ ! -d "$MENUBAR_APP" ]]; then
+  echo "未生成菜单栏应用：$MENUBAR_APP" >&2
+  exit 1
+fi
+
 mkdir -p "$STAGE_DIR"
 
-cp "$ROOT_DIR/README.md" "$ROOT_DIR/package.json" "$ROOT_DIR/package-lock.json" "$ROOT_DIR/claude-desktop-cn-installer.command" "$STAGE_DIR/"
-cp -R "$ROOT_DIR/scripts" "$ROOT_DIR/data" "$ROOT_DIR/node_modules" "$STAGE_DIR/"
+cp -R "$MENUBAR_APP" "$STAGE_DIR/ClaudeCN.app"
+cp "$ROOT_DIR/README.md" "$STAGE_DIR/README.md"
+ln -s /Applications "$STAGE_DIR/Applications"
 
-chmod +x "$STAGE_DIR/claude-desktop-cn-installer.command"
-
-cp "$STAGE_DIR/claude-desktop-cn-installer.command" "$STAGE_DIR/Claude_CN_Installer.command"
-
-cat > "$STAGE_DIR/安装说明.txt" <<'EOF'
+cat > "$STAGE_DIR/安装说明.txt" <<EOF
 claude-desktop-cn（macOS M5）全部汉化版本
 
-1) 双击 claude-desktop-cn-installer.command
-2) 输入管理员密码
-3) 自动汉化、重启 Claude，并打开查看效果
+推荐使用方式：
 
-路径参数已默认使用 /Applications/Claude.app，
-如你的 Claude 安装在其他位置，请手动运行以下命令：
+1) 将 ClaudeCN.app 拖入右侧 Applications。
+2) 打开 ClaudeCN.app，菜单栏会出现 ClaudeCN。
+3) 点击“一键汉化并重启 Claude”。
+4) 输入管理员密码后，工具会自动汉化、重启 Claude，并打开查看效果。
 
-node scripts/claude-cn.mjs apply --app /你的/Claude.app
+也可以直接双击 ClaudeCN.app 运行。
+
+如果 macOS 提示无法验证开发者：
+
+1) 右键点击 ClaudeCN.app。
+2) 选择“打开”。
+3) 再次确认打开。
+
+如果 Claude 不在 /Applications/Claude.app：
+
+请在菜单栏中选择“选择 Claude.app 后汉化…”。
 EOF
 
 hdiutil create \

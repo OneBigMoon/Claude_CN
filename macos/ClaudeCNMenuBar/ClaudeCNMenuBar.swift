@@ -1,170 +1,407 @@
 import AppKit
 import Foundation
-import UniformTypeIdentifiers
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+struct ClaudeCNState {
+    var status: String = "检测中"
+    var version: String = "-"
+    var isLocalized: Bool = false
+    var isRunning: Bool = false
+}
+
+final class RoundedPanelView: NSView {
+    override func draw(_ dirtyRect: NSRect) {
+        NSColor(calibratedWhite: 0.72, alpha: 0.96).setFill()
+        NSBezierPath(roundedRect: bounds, xRadius: 22, yRadius: 22).fill()
+    }
+}
+
+final class SeparatorView: NSView {
+    override var intrinsicContentSize: NSSize { NSSize(width: NSView.noIntrinsicMetric, height: 1) }
+
+    override func draw(_ dirtyRect: NSRect) {
+        NSColor(calibratedWhite: 0.55, alpha: 0.55).setFill()
+        dirtyRect.fill()
+    }
+}
+
+final class DotView: NSView {
+    var color = NSColor.systemGreen {
+        didSet { needsDisplay = true }
+    }
+
+    override var intrinsicContentSize: NSSize { NSSize(width: 9, height: 9) }
+
+    override func draw(_ dirtyRect: NSRect) {
+        color.setFill()
+        NSBezierPath(ovalIn: bounds.insetBy(dx: 1, dy: 1)).fill()
+    }
+}
+
+final class PanelViewController: NSViewController {
+    var onRepatch: (() -> Void)?
+    var onRestore: (() -> Void)?
+    var onRefresh: (() -> Void)?
+    var onQuit: (() -> Void)?
+
+    private let versionLabel = NSTextField(labelWithString: "v0.0.3")
+    private let statusValueLabel = NSTextField(labelWithString: "检测中")
+    private let claudeVersionLabel = NSTextField(labelWithString: "-")
+    private let dotView = DotView()
+    private let repatchButton = NSButton(title: "重新汉化", target: nil, action: nil)
+    private let restoreButton = NSButton(title: "恢复原版", target: nil, action: nil)
+    private let refreshButton = NSButton(title: "刷新状态", target: nil, action: nil)
+    private let quitButton = NSButton(title: "退出", target: nil, action: nil)
+
+    override func loadView() {
+        view = RoundedPanelView(frame: NSRect(x: 0, y: 0, width: 280, height: 340))
+        view.translatesAutoresizingMaskIntoConstraints = false
+        buildUI()
+    }
+
+    func update(_ state: ClaudeCNState) {
+        statusValueLabel.stringValue = state.isRunning ? "处理中" : state.status
+        claudeVersionLabel.stringValue = state.version
+        dotView.color = state.isRunning ? .systemOrange : (state.isLocalized ? .systemGreen : .systemRed)
+        repatchButton.isEnabled = !state.isRunning
+        restoreButton.isEnabled = !state.isRunning
+        refreshButton.isEnabled = !state.isRunning
+    }
+
+    private func buildUI() {
+        let root = NSStackView()
+        root.orientation = .vertical
+        root.spacing = 0
+        root.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(root)
+
+        NSLayoutConstraint.activate([
+            root.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            root.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            root.topAnchor.constraint(equalTo: view.topAnchor),
+            root.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+
+        root.addArrangedSubview(headerView())
+        root.addArrangedSubview(SeparatorView())
+        root.addArrangedSubview(statusView())
+        root.addArrangedSubview(SeparatorView())
+        root.addArrangedSubview(actionView())
+        root.addArrangedSubview(SeparatorView())
+        root.addArrangedSubview(authorView())
+        root.addArrangedSubview(SeparatorView())
+        root.addArrangedSubview(footerView())
+    }
+
+    private func headerView() -> NSView {
+        let container = paddedContainer(top: 16, left: 16, bottom: 14, right: 16)
+        let stack = NSStackView()
+        stack.orientation = .horizontal
+        stack.alignment = .centerY
+        stack.spacing = 10
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(stack)
+        pin(stack, to: container, top: 16, left: 16, bottom: 14, right: 16)
+
+        let icon = NSImageView()
+        icon.image = NSImage(systemSymbolName: "globe.asia.australia.fill", accessibilityDescription: "ClaudeCN") ?? NSImage(systemSymbolName: "globe", accessibilityDescription: "ClaudeCN")
+        icon.contentTintColor = .systemBlue
+        icon.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            icon.widthAnchor.constraint(equalToConstant: 26),
+            icon.heightAnchor.constraint(equalToConstant: 26)
+        ])
+
+        let textStack = NSStackView()
+        textStack.orientation = .vertical
+        textStack.spacing = 3
+
+        let title = NSTextField(labelWithString: "Claude 汉化助手")
+        title.font = .boldSystemFont(ofSize: 15)
+        title.textColor = NSColor(calibratedWhite: 0.18, alpha: 1)
+
+        versionLabel.font = .systemFont(ofSize: 11, weight: .medium)
+        versionLabel.textColor = NSColor(calibratedWhite: 0.22, alpha: 1)
+
+        textStack.addArrangedSubview(title)
+        textStack.addArrangedSubview(versionLabel)
+
+        stack.addArrangedSubview(icon)
+        stack.addArrangedSubview(textStack)
+        return container
+    }
+
+    private func statusView() -> NSView {
+        let container = paddedContainer(top: 16, left: 16, bottom: 16, right: 16)
+        let grid = NSGridView()
+        grid.translatesAutoresizingMaskIntoConstraints = false
+        grid.rowSpacing = 10
+        grid.columnSpacing = 10
+        container.addSubview(grid)
+        pin(grid, to: container, top: 16, left: 16, bottom: 16, right: 16)
+
+        let statusTitle = rowTitle("状态")
+        let versionTitle = rowTitle("版本")
+        let statusStack = NSStackView()
+        statusStack.orientation = .horizontal
+        statusStack.alignment = .centerY
+        statusStack.spacing = 6
+        statusValueLabel.font = .systemFont(ofSize: 13, weight: .medium)
+        statusValueLabel.alignment = .right
+        statusStack.addArrangedSubview(dotView)
+        statusStack.addArrangedSubview(statusValueLabel)
+
+        claudeVersionLabel.font = .systemFont(ofSize: 13, weight: .medium)
+        claudeVersionLabel.alignment = .right
+
+        grid.addRow(with: [statusTitle, statusStack])
+        grid.addRow(with: [versionTitle, claudeVersionLabel])
+        grid.column(at: 0).xPlacement = .leading
+        grid.column(at: 1).xPlacement = .trailing
+        return container
+    }
+
+    private func actionView() -> NSView {
+        let container = paddedContainer(top: 14, left: 16, bottom: 14, right: 16)
+        let stack = NSStackView()
+        stack.orientation = .vertical
+        stack.spacing = 10
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(stack)
+        pin(stack, to: container, top: 14, left: 16, bottom: 14, right: 16)
+
+        configurePrimaryButton(repatchButton, symbol: "arrow.clockwise.circle.fill", action: #selector(repatch))
+        configurePrimaryButton(restoreButton, symbol: "arrow.uturn.backward.circle", action: #selector(restore))
+
+        stack.addArrangedSubview(repatchButton)
+        stack.addArrangedSubview(restoreButton)
+        return container
+    }
+
+    private func authorView() -> NSView {
+        let container = paddedContainer(top: 13, left: 16, bottom: 13, right: 16)
+        let stack = NSStackView()
+        stack.orientation = .vertical
+        stack.alignment = .centerX
+        stack.spacing = 5
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(stack)
+        pin(stack, to: container, top: 13, left: 16, bottom: 13, right: 16)
+
+        let author = smallCentered("作者：OneBigMoon")
+        let thanks = smallCentered("致谢：Winhao学AI / Win-Hao/ClaudeCN")
+        let free = smallCentered("本软件完全免费，不可商业化")
+        free.textColor = .systemOrange
+        let warn = smallCentered("付费获取即被骗，请举报")
+        warn.textColor = .systemRed
+
+        stack.addArrangedSubview(author)
+        stack.addArrangedSubview(thanks)
+        stack.addArrangedSubview(free)
+        stack.addArrangedSubview(warn)
+        return container
+    }
+
+    private func footerView() -> NSView {
+        let container = paddedContainer(top: 12, left: 16, bottom: 12, right: 16)
+        let stack = NSStackView()
+        stack.orientation = .horizontal
+        stack.alignment = .centerY
+        stack.distribution = .equalSpacing
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(stack)
+        pin(stack, to: container, top: 12, left: 16, bottom: 12, right: 16)
+
+        configureFooterButton(refreshButton, action: #selector(refresh))
+        configureFooterButton(quitButton, action: #selector(quit))
+
+        stack.addArrangedSubview(refreshButton)
+        stack.addArrangedSubview(quitButton)
+        return container
+    }
+
+    private func paddedContainer(top: CGFloat, left: CGFloat, bottom: CGFloat, right: CGFloat) -> NSView {
+        let view = NSView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }
+
+    private func pin(_ child: NSView, to parent: NSView, top: CGFloat, left: CGFloat, bottom: CGFloat, right: CGFloat) {
+        NSLayoutConstraint.activate([
+            child.topAnchor.constraint(equalTo: parent.topAnchor, constant: top),
+            child.leadingAnchor.constraint(equalTo: parent.leadingAnchor, constant: left),
+            child.trailingAnchor.constraint(equalTo: parent.trailingAnchor, constant: -right),
+            child.bottomAnchor.constraint(equalTo: parent.bottomAnchor, constant: -bottom)
+        ])
+    }
+
+    private func rowTitle(_ text: String) -> NSTextField {
+        let label = NSTextField(labelWithString: text)
+        label.font = .boldSystemFont(ofSize: 14)
+        label.textColor = NSColor(calibratedWhite: 0.18, alpha: 1)
+        return label
+    }
+
+    private func smallCentered(_ text: String) -> NSTextField {
+        let label = NSTextField(labelWithString: text)
+        label.font = .systemFont(ofSize: 12, weight: .semibold)
+        label.alignment = .center
+        label.textColor = NSColor(calibratedWhite: 0.22, alpha: 1)
+        return label
+    }
+
+    private func configurePrimaryButton(_ button: NSButton, symbol: String, action: Selector) {
+        button.target = self
+        button.action = action
+        button.font = .systemFont(ofSize: 14, weight: .bold)
+        button.bezelStyle = .rounded
+        button.controlSize = .large
+        button.image = NSImage(systemSymbolName: symbol, accessibilityDescription: button.title)
+        button.imagePosition = .imageLeading
+        button.contentTintColor = NSColor(calibratedWhite: 0.18, alpha: 1)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.heightAnchor.constraint(equalToConstant: 38).isActive = true
+    }
+
+    private func configureFooterButton(_ button: NSButton, action: Selector) {
+        button.target = self
+        button.action = action
+        button.font = .systemFont(ofSize: 12, weight: .bold)
+        button.bezelStyle = .rounded
+        button.controlSize = .regular
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.widthAnchor.constraint(equalToConstant: 76).isActive = true
+        button.heightAnchor.constraint(equalToConstant: 28).isActive = true
+    }
+
+    @objc private func repatch() { onRepatch?() }
+    @objc private func restore() { onRestore?() }
+    @objc private func refresh() { onRefresh?() }
+    @objc private func quit() { onQuit?() }
+}
+
+final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var statusItem: NSStatusItem!
-    private var isRunning = false
-    private var statusText = "待命"
+    private let popover = NSPopover()
+    private let panel = PanelViewController()
+    private var state = ClaudeCNState()
     private let logURL = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent("Library/Logs/ClaudeCNMenuBar.log")
+        .appendingPathComponent("Library/Logs/ClaudeCN.log")
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.button?.title = "ClaudeCN"
+        statusItem.button?.image = NSImage(systemSymbolName: "globe.asia.australia.fill", accessibilityDescription: "ClaudeCN")
+        statusItem.button?.imagePosition = .imageLeading
+        statusItem.button?.target = self
+        statusItem.button?.action = #selector(togglePopover)
         statusItem.button?.toolTip = "Claude 汉化助手"
 
-        rebuildMenu()
+        panel.onRepatch = { [weak self] in self?.runApply() }
+        panel.onRestore = { [weak self] in self?.runRestore() }
+        panel.onRefresh = { [weak self] in self?.refreshStatus(showAlert: false) }
+        panel.onQuit = { NSApp.terminate(nil) }
+
+        popover.contentSize = NSSize(width: 280, height: 340)
+        popover.behavior = .transient
+        popover.delegate = self
+        popover.contentViewController = panel
+
         refreshStatus(showAlert: false)
     }
 
-    private func rebuildMenu() {
-        let menu = NSMenu()
-
-        let title = NSMenuItem(title: "Claude 汉化助手", action: nil, keyEquivalent: "")
-        title.isEnabled = false
-        menu.addItem(title)
-
-        let status = NSMenuItem(title: "状态：\(statusText)", action: nil, keyEquivalent: "")
-        status.isEnabled = false
-        menu.addItem(status)
-        menu.addItem(.separator())
-
-        menu.addItem(makeItem("一键汉化并重启 Claude", #selector(applyDefault), enabled: !isRunning))
-        menu.addItem(makeItem("选择 Claude.app 后汉化…", #selector(chooseAndApply), enabled: !isRunning))
-        menu.addItem(makeItem("检查汉化状态", #selector(checkStatus), enabled: !isRunning))
-        menu.addItem(.separator())
-
-        menu.addItem(makeItem("打开 Claude", #selector(openClaude), enabled: true))
-        menu.addItem(makeItem("打开运行日志", #selector(openLog), enabled: true))
-        menu.addItem(makeItem("打开项目主页", #selector(openProjectPage), enabled: true))
-        menu.addItem(.separator())
-
-        menu.addItem(makeItem("退出 ClaudeCN", #selector(quit), enabled: true))
-
-        statusItem.menu = menu
-        statusItem.button?.title = isRunning ? "ClaudeCN…" : "ClaudeCN"
-    }
-
-    private func makeItem(_ title: String, _ action: Selector?, enabled: Bool) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
-        item.target = self
-        item.isEnabled = enabled
-        return item
-    }
-
-    @objc private func applyDefault() {
-        runApply(appPath: nil)
-    }
-
-    @objc private func chooseAndApply() {
-        let panel = NSOpenPanel()
-        panel.title = "选择 Claude.app"
-        panel.prompt = "选择"
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = false
-        panel.allowsMultipleSelection = false
-        panel.allowedContentTypes = [.applicationBundle]
-
-        guard panel.runModal() == .OK, let url = panel.url else {
-            return
+    @objc private func togglePopover() {
+        guard let button = statusItem.button else { return }
+        if popover.isShown {
+            popover.performClose(nil)
+        } else {
+            panel.update(state)
+            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            refreshStatus(showAlert: false)
         }
-
-        runApply(appPath: url.path)
-    }
-
-    @objc private func checkStatus() {
-        refreshStatus(showAlert: true)
-    }
-
-    @objc private func openClaude() {
-        NSWorkspace.shared.openApplication(
-            at: URL(fileURLWithPath: "/Applications/Claude.app"),
-            configuration: NSWorkspace.OpenConfiguration(),
-            completionHandler: nil
-        )
-    }
-
-    @objc private func openLog() {
-        ensureLogDirectory()
-        if !FileManager.default.fileExists(atPath: logURL.path) {
-            appendLog("ClaudeCN 菜单栏工具日志已创建。")
-        }
-        NSWorkspace.shared.open(logURL)
-    }
-
-    @objc private func openProjectPage() {
-        if let url = URL(string: "https://github.com/OneBigMoon/Claude_CN") {
-            NSWorkspace.shared.open(url)
-        }
-    }
-
-    @objc private func quit() {
-        NSApp.terminate(nil)
     }
 
     private func refreshStatus(showAlert: Bool) {
-        setBusy(true, "检查中")
+        setBusy(true)
         runTool(arguments: ["status"], requiresAdmin: false) { [weak self] result in
             guard let self else { return }
             switch result {
             case .success(let output):
-                let summary = self.compactOutput(output)
-                self.statusText = summary.contains("zh-CN") ? "中文已配置" : "已检测"
                 self.appendLog(output)
-                self.setBusy(false, self.statusText)
-                if showAlert {
-                    self.showAlert(title: "ClaudeCN 状态", message: summary)
-                }
+                self.state = self.parseStatus(output)
+                self.state.isRunning = false
+                self.panel.update(self.state)
+                if showAlert { self.showAlert(title: "ClaudeCN 状态", message: output) }
             case .failure(let error):
-                self.statusText = "检查失败"
                 self.appendLog(error.localizedDescription)
-                self.setBusy(false, self.statusText)
-                if showAlert {
-                    self.showAlert(title: "检查失败", message: error.localizedDescription)
-                }
+                self.state.status = "检查失败"
+                self.state.isLocalized = false
+                self.state.isRunning = false
+                self.panel.update(self.state)
+                if showAlert { self.showAlert(title: "检查失败", message: error.localizedDescription) }
             }
         }
     }
 
-    private func runApply(appPath: String?) {
-        let target = appPath ?? "/Applications/Claude.app"
-        setBusy(true, "汉化中")
-
-        var args = ["apply"]
-        if let appPath {
-            args.append(contentsOf: ["--app", appPath])
-        }
-
-        appendLog("开始汉化：\(target)")
-        runTool(arguments: args, requiresAdmin: true) { [weak self] result in
+    private func runApply() {
+        setBusy(true)
+        appendLog("开始重新汉化")
+        runTool(arguments: ["apply"], requiresAdmin: true) { [weak self] result in
             guard let self else { return }
             switch result {
             case .success(let output):
                 self.appendLog(output)
-                self.statusText = "汉化完成"
-                self.setBusy(false, self.statusText)
-                self.showAlert(
-                    title: "汉化完成",
-                    message: "Claude 已重新打补丁、重签名并重启。\n\n\(self.compactOutput(output))"
-                )
+                self.refreshStatus(showAlert: false)
             case .failure(let error):
                 self.appendLog(error.localizedDescription)
-                self.statusText = "汉化失败"
-                self.setBusy(false, self.statusText)
+                self.state.status = "汉化失败"
+                self.state.isRunning = false
+                self.panel.update(self.state)
                 self.showAlert(title: "汉化失败", message: error.localizedDescription)
             }
         }
     }
 
-    private func setBusy(_ busy: Bool, _ status: String) {
-        DispatchQueue.main.async {
-            self.isRunning = busy
-            self.statusText = status
-            self.rebuildMenu()
+    private func runRestore() {
+        setBusy(true)
+        appendLog("开始恢复原版")
+        runTool(arguments: ["restore"], requiresAdmin: true) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success(let output):
+                self.appendLog(output)
+                self.refreshStatus(showAlert: false)
+            case .failure(let error):
+                self.appendLog(error.localizedDescription)
+                self.state.status = "恢复失败"
+                self.state.isRunning = false
+                self.panel.update(self.state)
+                self.showAlert(title: "恢复失败", message: error.localizedDescription)
+            }
         }
+    }
+
+    private func setBusy(_ busy: Bool) {
+        DispatchQueue.main.async {
+            self.state.isRunning = busy
+            self.panel.update(self.state)
+            self.statusItem.button?.title = busy ? "ClaudeCN…" : "ClaudeCN"
+        }
+    }
+
+    private func parseStatus(_ output: String) -> ClaudeCNState {
+        var next = ClaudeCNState()
+        for line in output.split(separator: "\n").map(String.init) {
+            if line.contains("状态:") {
+                next.status = line.components(separatedBy: "状态:").last?.trimmingCharacters(in: .whitespaces) ?? next.status
+            }
+            if line.contains("Claude 版本:") {
+                next.version = line.components(separatedBy: "Claude 版本:").last?.trimmingCharacters(in: .whitespaces) ?? next.version
+            }
+        }
+        next.isLocalized = next.status.contains("已汉化")
+        return next
     }
 
     private func runTool(
@@ -185,13 +422,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     output = try self.runWithoutAdmin(root: root, arguments: arguments)
                 }
 
-                DispatchQueue.main.async {
-                    completion(.success(output))
-                }
+                DispatchQueue.main.async { completion(.success(output)) }
             } catch {
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
+                DispatchQueue.main.async { completion(.failure(error)) }
             }
         }
     }
@@ -216,11 +449,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         let output = String(data: data, encoding: .utf8) ?? ""
-
         guard process.terminationStatus == 0 else {
             throw RunnerError.processFailed(process.terminationStatus, output)
         }
-
         return output
     }
 
@@ -242,11 +473,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         let output = String(data: data, encoding: .utf8) ?? ""
-
         guard process.terminationStatus == 0 else {
             throw RunnerError.processFailed(process.terminationStatus, output)
         }
-
         return output
     }
 
@@ -280,13 +509,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .replacingOccurrences(of: "\"", with: "\\\"")
             .replacingOccurrences(of: "\n", with: "\\n")
         return "\"\(escaped)\""
-    }
-
-    private func compactOutput(_ output: String) -> String {
-        let lines = output
-            .split(separator: "\n", omittingEmptySubsequences: true)
-            .map(String.init)
-        return lines.suffix(10).joined(separator: "\n")
     }
 
     private func showAlert(title: String, message: String) {

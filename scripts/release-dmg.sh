@@ -38,7 +38,11 @@ if ! git -C "$ROOT_DIR" rev-parse "$TAG" >/dev/null 2>&1; then
 fi
 
 bash "${ROOT_DIR}/scripts/build-dmg.sh"
-bash "${ROOT_DIR}/scripts/build-menubar-app.sh"
+
+if [[ ! -f "$MENUBAR_ZIP_PATH" ]]; then
+  echo "未找到菜单栏应用压缩包：$MENUBAR_ZIP_PATH" >&2
+  exit 1
+fi
 
 if gh -R "$GH_REPO" release view "$TAG" >/dev/null 2>&1; then
   gh -R "$GH_REPO" release upload "$TAG" "$DMG_PATH" "$MENUBAR_ZIP_PATH" --clobber
