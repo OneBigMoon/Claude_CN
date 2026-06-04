@@ -730,6 +730,79 @@ const currentVersionLiteralTranslations = {
   "Your gateway couldn't serve {model}. This model may not be configured on your gateway, or access may be restricted.": "你的网关无法提供 {model}。该模型可能未在网关中配置，或访问受限。",
   "The provider rejected the credentials IT configured. This usually means an expired key or wrong region.": "提供商拒绝了 IT 配置的凭据。通常是密钥过期或区域设置错误。",
 
+  // Workspace restrictions and egress requirements
+  "General restrictions": "通用限制",
+  "These apply regardless of which surfaces are enabled.": "无论启用了哪些界面，这些限制都会生效。",
+  "Allowed egress hosts": "允许的出站主机",
+  "Hostnames the agent's tools may reach from the Cowork and Code tabs. Also surfaced under Egress Requirements.": "代理工具可从 Cowork 和 Code 标签页访问的主机名，也会显示在“出站访问要求”中。",
+  "Allowed workspace folders": "允许的工作区文件夹",
+  "Folders users may attach as a workspace. Leave unset for unrestricted access.": "用户可作为工作区附加的文件夹。留空表示不限制访问。",
+  "Disabled built-in tools": "禁用的内置工具",
+  "Built-in tools removed from Cowork.": "从 Cowork 中移除的内置工具。",
+  "Choose…": "选择…",
+  "Choose...": "选择...",
+  "Built-in tool policy": "内置工具策略",
+  "Per-tool approval policy. \"ask\" requires user approval before each call; \"allow\" is the default. Use Disabled built-in tools to remove a tool entirely.": "按工具设置审批策略。“ask” 表示每次调用前都需要用户批准；“allow” 是默认值。若要完全移除某个工具，请使用“禁用的内置工具”。",
+  "Allow Auto mode": "允许自动模式",
+  "Offer Auto mode in the Cowork and Code permission selectors. Claude decides which actions need approval.": "在 Cowork 和 Code 权限选择器中提供自动模式。Claude 会判断哪些操作需要审批。",
+  "Auto mode": "自动模式",
+  "Enable auto mode": "启用自动模式",
+  "Enable auto mode?": "启用自动模式？",
+  "Auto mode lets Claude handle permission prompts automatically. Claude checks each tool call for risky actions and prompt injection before executing, runs the ones it assesses as lower-risk, and blocks the rest.": "自动模式允许 Claude 自动处理权限提示。执行前，Claude 会检查每次工具调用是否存在高风险操作或提示注入，运行其判断为较低风险的调用，并阻止其余调用。",
+  "Auto mode isn't available for this session. Asking for permissions instead.": "此会话无法使用自动模式，将改为请求权限。",
+  "Auto mode is now Claude Code's default permission mode": "自动模式现在是 Claude Code 的默认权限模式",
+  "Auto mode is now available on the Pro plan — Sonnet 4.6 is now supported, alongside Opus 4.7": "自动模式现已面向 Pro 计划开放，除 Opus 4.7 外也支持 Sonnet 4.6。",
+  "Make auto mode your default permission mode?": "将自动模式设为默认权限模式？",
+  "Accept and auto mode": "接受并使用自动模式",
+  "Tool policy": "工具策略",
+  "Tool policy for {name}": "{name} 的工具策略",
+  "Bypass permissions mode and auto mode controls for Claude Code Desktop are moving to Managed settings on June 5, 2026, alongside the CLI and IDE.": "Claude Code Desktop 的绕过权限模式和自动模式控制将于 2026 年 6 月 5 日与 CLI 和 IDE 一起迁移到托管设置。",
+  "Disable Claude.ai sign-in": "禁用 Claude.ai 登录",
+  "Users see only this provider at the login screen. The option to sign in to Claude.ai is hidden.": "用户在登录界面只会看到此提供商，Claude.ai 登录选项会被隐藏。",
+  "Disable claude:// deep-link handling": "禁用 claude:// 深层链接处理",
+  "Stop external apps and websites from opening Cowork via claude:// links.": "阻止外部应用和网站通过 claude:// 链接打开 Cowork。",
+  "MCP servers": "MCP 服务器",
+  "Managed MCP servers": "托管的 MCP 服务器",
+  "Org-pushed MCP servers: remote (HTTP/SSE) or local (stdio command). May embed bearer tokens.": "组织下发的 MCP 服务器：远程（HTTP/SSE）或本地（stdio 命令）。可能包含 bearer token。",
+  "Allow user-added MCP servers": "允许用户添加 MCP 服务器",
+  "Local stdio servers added via the Developer settings. Remote servers come from the managed list above, or plugins mounted to a user's computer by an organization admin.": "通过开发者设置添加的本地 stdio 服务器。远程服务器来自上方托管列表，或由组织管理员挂载到用户电脑上的插件提供。",
+  "Local command (stdio)": "本地命令 (stdio)",
+  "Local MCP servers": "本地 MCP 服务器",
+  "Your MCP servers": "你的 MCP 服务器",
+  "Known MCP servers": "已知 MCP 服务器",
+  "Add an MCP server": "添加 MCP 服务器",
+  "Remote MCP server URL": "远程 MCP 服务器 URL",
+  "Allow desktop extensions": "允许桌面扩展",
+  ".dxt and .mcpb installs.": ".dxt 和 .mcpb 安装。",
+  "Require signed extensions": "要求扩展签名",
+  "Reject desktop extensions that are not signed by a trusted publisher.": "拒绝未由可信发布者签名的桌面扩展。",
+  "Desktop extension allowlist": "桌面扩展允许列表",
+  "Desktop extensions (Python runtime)": "桌面扩展（Python 运行时）",
+  "User-added MCP (Python runtime)": "用户添加的 MCP（Python 运行时）",
+  "Limit the desktop extensions that your team can install on their desktop.": "限制团队成员可在桌面端安装的桌面扩展。",
+  "When enabled, users can only install desktop extensions that have been added to the list above.": "启用后，用户只能安装已添加到上方列表中的桌面扩展。",
+  "Organization plugins": "组织插件",
+  "Organization plugin settings": "组织插件设置",
+  "No organization plugins found": "未找到组织插件",
+  "Mount plugin bundles to this folder using your device-management tool and Cowork will load them at launch. The folder is read-only; tool policies you set below are saved in this configuration.": "使用你的设备管理工具将插件包挂载到此文件夹，Cowork 会在启动时加载它们。该文件夹为只读；你在下方设置的工具策略会保存在此配置中。",
+  "Failed to load organization plugins.": "加载组织插件失败。",
+  "Failed to load organization plugins. This desktop build is missing plugin support — try reinstalling the application.": "加载组织插件失败。此桌面版本缺少插件支持，请尝试重新安装应用。",
+  "Admin policy applied to plugin-delivered MCP servers.": "应用于插件提供的 MCP 服务器的管理员策略。",
+  "Applies once a plugin ships an MCP server with this name.": "当某个插件提供同名 MCP 服务器时生效。",
+
+  // Export menu in third-party inference configuration
+  "This configuration contains sensitive values. They will be written to the exported file in plain text.": "此配置包含敏感值。它们会以明文写入导出的文件。",
+  "macOS configuration profile": "macOS 配置描述文件",
+  "Windows registry file": "Windows 注册表文件",
+  "Plain JSON": "普通 JSON",
+  "Firewall allowlist (.txt)": "防火墙允许列表 (.txt)",
+  "Copy to clipboard (redacted)": "复制到剪贴板（已脱敏）",
+  "Templates": "模板",
+  "Group Policy template (ADMX)": "组策略模板 (ADMX)",
+  "Schema only — defines available policies for Intune / Group Policy. Values are configured in your management console.": "仅包含架构，用于定义 Intune / 组策略中可用的策略。具体值请在你的管理控制台中配置。",
+  "Profile Manifest (.plist)": "配置清单 (.plist)",
+  "Defines available settings for Jamf / ProfileCreator and similar macOS tools.": "定义 Jamf / ProfileCreator 及类似 macOS 工具可用的设置。",
+
   // Sidebar and selector values observed after restart
   "Mode": "模式",
   "Projects": "项目",
@@ -889,7 +962,7 @@ function installRuntimeDomTranslator() {
       .filter(([from, to]) => typeof from === "string" && typeof to === "string")
       .map(([from, to]) => [decodeJsStringContent(from), to])
   );
-  const script = `;(()=>{const k="__CLAUDE_CN_DOM_TRANSLATOR_V4__";if(globalThis[k])return;globalThis[k]=true;const M=${JSON.stringify(dictionary)};const W=Object.fromEntries(Object.entries(M).map(([e,c])=>[e.replace(/\\s+/g," "),c]));const S=new Set(["SCRIPT","STYLE","TEXTAREA","INPUT","CODE","PRE"]);function z(){try{const a=[globalThis.__CLAUDE_CN_LOCALE,document.documentElement.lang,navigator.language,localStorage.getItem("locale"),localStorage.getItem("claude_locale")].filter(Boolean).join("|").toLowerCase();return a.includes("zh-cn")||a.includes("zh_hans")||a.includes("zh-hans")}catch{return false}}function p(v){if(!v)return v;const t=v.trim();if(!t)return v;if(!z())return v;const m=M[t]||W[t.replace(/\\s+/g," ")];return m?v.replace(t,m):v}function n(o){const e=o.parentElement;if(!e||S.has(e.tagName)||e.closest?.("[contenteditable=true],[contenteditable=''],[role=textbox]"))return;const v=p(o.nodeValue);if(v!==o.nodeValue)o.nodeValue=v}function a(e){for(const r of ["aria-label","aria-description","aria-valuetext","placeholder","title"]){const v=e.getAttribute?.(r);if(v){const m=p(v);m!==v&&e.setAttribute(r,m)}}}function w(root=document.body){try{const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);for(let o;o=tw.nextNode();)n(o);root.querySelectorAll?.("[aria-label],[aria-description],[aria-valuetext],[placeholder],[title]").forEach(a)}catch{}}new MutationObserver(ms=>{for(const m of ms){m.type==="characterData"&&n(m.target);m.type==="attributes"&&a(m.target);m.addedNodes&&m.addedNodes.forEach(o=>{o.nodeType===3?n(o):o.nodeType===1&&w(o)})}}).observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["aria-label","aria-description","aria-valuetext","placeholder","title"]});document.readyState==="loading"?document.addEventListener("DOMContentLoaded",()=>w()):w();setInterval(w,1500)})();`;
+  const script = `;(()=>{const k="__CLAUDE_CN_DOM_TRANSLATOR_V5__";if(globalThis[k])return;globalThis[k]=true;const M=${JSON.stringify(dictionary)};const W=Object.fromEntries(Object.entries(M).map(([e,c])=>[e.replace(/\\s+/g," "),c]));const S=new Set(["SCRIPT","STYLE","TEXTAREA","INPUT","CODE","PRE"]);function z(){try{const a=[globalThis.__CLAUDE_CN_LOCALE,document.documentElement.lang,navigator.language,localStorage.getItem("locale"),localStorage.getItem("claude_locale")].filter(Boolean).join("|").toLowerCase();return a.includes("zh-cn")||a.includes("zh_hans")||a.includes("zh-hans")}catch{return false}}function p(v){if(!v)return v;const t=v.trim();if(!t)return v;if(!z())return v;const m=M[t]||W[t.replace(/\\s+/g," ")];return m?v.replace(t,m):v}function n(o){const e=o.parentElement;if(!e||S.has(e.tagName)||e.closest?.("[contenteditable=true],[contenteditable=''],[role=textbox]"))return;const v=p(o.nodeValue);if(v!==o.nodeValue)o.nodeValue=v}function a(e){for(const r of ["aria-label","aria-description","aria-valuetext","placeholder","title"]){const v=e.getAttribute?.(r);if(v){const m=p(v);m!==v&&e.setAttribute(r,m)}}}function w(root=document.body){try{const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);for(let o;o=tw.nextNode();)n(o);root.querySelectorAll?.("[aria-label],[aria-description],[aria-valuetext],[placeholder],[title]").forEach(a)}catch{}}new MutationObserver(ms=>{for(const m of ms){m.type==="characterData"&&n(m.target);m.type==="attributes"&&a(m.target);m.addedNodes&&m.addedNodes.forEach(o=>{o.nodeType===3?n(o):o.nodeType===1&&w(o)})}}).observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["aria-label","aria-description","aria-valuetext","placeholder","title"]});document.readyState==="loading"?document.addEventListener("DOMContentLoaded",()=>w()):w();setInterval(w,1500)})();`;
   let total = 0;
   for (const file of jsFiles(assetsDir)) {
     if (!path.basename(file).startsWith("index-")) continue;
@@ -898,7 +971,7 @@ function installRuntimeDomTranslator() {
       /^;\(\(\)=>\{const k="__CLAUDE_CN_DOM_TRANSLATOR(?:_V\d+)?__";[^\n]*\}\)\(\);\n/gm,
       ""
     );
-    if (cleaned.includes("__CLAUDE_CN_DOM_TRANSLATOR_V4__")) continue;
+    if (cleaned.includes("__CLAUDE_CN_DOM_TRANSLATOR_V5__")) continue;
     backup(file);
     fs.writeFileSync(file, script + "\n" + cleaned);
     total++;

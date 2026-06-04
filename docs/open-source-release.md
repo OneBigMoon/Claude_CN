@@ -39,10 +39,10 @@ gh repo create OneBigMoon/claude-desktop-cn --public --source=. --remote=origin 
 ```bash
 npm run dist:dmg
 npm run menubar:build
-gh release create v0.0.9 \
-  dist/claude-desktop-cn-macos-m5-0.0.9.dmg \
+gh release create v0.0.10 \
+  dist/claude-desktop-cn-macos-m5-0.0.10.dmg \
   dist/ClaudeCN-macos.zip \
-  --title "claude-desktop-cn v0.0.9" \
+  --title "claude-desktop-cn v0.0.10" \
   --notes "Claude Desktop 中文化补丁工具，新增 Swift 菜单栏 App。"
 ```
 
