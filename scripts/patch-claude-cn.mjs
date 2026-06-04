@@ -674,6 +674,62 @@ const currentVersionLiteralTranslations = {
   "Edit Config": "编辑配置",
   "Developer docs": "开发者文档",
 
+  // Third-party inference configuration window
+  "Configure third-party inference": "配置第三方推理",
+  "Search settings": "搜索设置",
+  "Connection": "连接",
+  "Choose where Claude Desktop sends inference requests.": "选择 Claude Desktop 发送推理请求的位置。",
+  "Workspace restrictions": "工作区限制",
+  "Connectors & extensions": "连接器和扩展",
+  "Telemetry & updates": "遥测与更新",
+  "Usage limits": "使用限制",
+  "Plugins & skills": "插件和技能",
+  "Egress Requirements": "出站访问要求",
+  "Source": "来源",
+  "GATEWAY CREDENTIALS": "网关凭据",
+  "Gateway credentials": "网关凭据",
+  "Credential kind": "凭据类型",
+  "Credential type": "凭据类型",
+  "Selects the credential source. When set, only that source is used (no fallback).": "选择凭据来源。设置后只使用该来源（不回退）。",
+  "Static API key": "静态 API 密钥",
+  "Gateway base URL": "网关基础 URL",
+  "Full URL of the inference gateway endpoint.": "推理网关端点的完整 URL。",
+  "Gateway API key": "网关 API 密钥",
+  "Gateway auth scheme": "网关认证方案",
+  "How the gateway credential is sent on the wire (Authorization: Bearer vs x-api-key header).": "网关凭据在请求中如何发送（Authorization: Bearer 或 x-api-key 请求头）。",
+  "Custom inference headers": "自定义推理请求头",
+  "Extra HTTP headers sent on every inference request to the configured provider. For tenant routing, org IDs, Bedrock Guardrails, etc.": "随每次推理请求发送给已配置提供商的额外 HTTP 请求头，可用于租户路由、组织 ID、Bedrock Guardrails 等。",
+  "Add header": "添加请求头",
+  "Header name": "请求头名称",
+  "Custom header name": "自定义请求头名称",
+  "Custom header…": "自定义请求头…",
+  "Search header names": "搜索请求头名称",
+  "Value": "值",
+  "Required": "必填",
+  "Remove header": "移除请求头",
+  "Apply Changes": "应用更改",
+  "Test connection": "测试连接",
+  "Test this connection": "测试此连接",
+  "Checking connection...": "正在检查连接...",
+  "Connection test failed. Check your configuration and try again.": "连接测试失败。请检查配置后重试。",
+  "Could not test connection. Check your configuration and try again.": "无法测试连接。请检查配置后重试。",
+  "Connection test passed.": "连接测试通过。",
+  "Enter {field} to test the connection": "输入 {field} 后测试连接",
+  "Export": "导出",
+  "your organization's inference gateway": "你组织的推理网关",
+  "a custom inference gateway": "自定义推理网关",
+  "Connect to your own gateway": "连接到你自己的网关",
+  "Gateway sign-in (OIDC)": "网关登录 (OIDC)",
+  "Gateway SSO IdP (OIDC)": "网关 SSO 身份提供商 (OIDC)",
+  "Which token to send as the gateway bearer. Use access token for gateways that validate as an OAuth resource server.": "选择作为网关 Bearer 凭据发送的令牌。对于按 OAuth 资源服务器校验的网关，请使用访问令牌。",
+  "External IdP for gateway sign-in. The user authenticates against this issuer; the resulting token (ID token by default) is sent to the gateway as the Bearer credential. Leave unset only if the gateway is its own OAuth authorization server.": "用于网关登录的外部身份提供商。用户会向该签发方认证，生成的令牌（默认 ID token）会作为 Bearer 凭据发送到网关。只有当网关本身就是 OAuth 授权服务器时才留空。",
+  "Required for access-token mode — set the gateway's API scope (e.g. api://gateway/.default). offline_access is appended automatically for silent refresh.": "访问令牌模式必填，请设置网关的 API scope（例如 api://gateway/.default）。offline_access 会自动追加，用于静默刷新。",
+  "Leave blank to fetch a key via browser sign-in, or to supply the key via a credential helper.": "留空则通过浏览器登录获取密钥，或由凭据助手提供密钥。",
+  "Endpoint is plain HTTP; auth credentials travel in cleartext.": "端点使用普通 HTTP，认证凭据会以明文传输。",
+  "The provider rejected your credentials. Re-enter them in Setup.": "提供商拒绝了你的凭据。请在设置中重新输入。",
+  "Your gateway couldn't serve {model}. This model may not be configured on your gateway, or access may be restricted.": "你的网关无法提供 {model}。该模型可能未在网关中配置，或访问受限。",
+  "The provider rejected the credentials IT configured. This usually means an expired key or wrong region.": "提供商拒绝了 IT 配置的凭据。通常是密钥过期或区域设置错误。",
+
   // Sidebar and selector values observed after restart
   "Mode": "模式",
   "Projects": "项目",
@@ -833,7 +889,7 @@ function installRuntimeDomTranslator() {
       .filter(([from, to]) => typeof from === "string" && typeof to === "string")
       .map(([from, to]) => [decodeJsStringContent(from), to])
   );
-  const script = `;(()=>{const k="__CLAUDE_CN_DOM_TRANSLATOR_V3__";if(globalThis[k])return;globalThis[k]=true;const M=${JSON.stringify(dictionary)};const R=Object.fromEntries(Object.entries(M).map(([e,c])=>[c,e]));const S=new Set(["SCRIPT","STYLE","TEXTAREA","INPUT","CODE","PRE"]);function z(){try{const a=[globalThis.__CLAUDE_CN_LOCALE,document.documentElement.lang,navigator.language,localStorage.getItem("locale"),localStorage.getItem("claude_locale")].filter(Boolean).join("|").toLowerCase();return a.includes("zh-cn")||a.includes("zh_hans")||a.includes("zh-hans")}catch{return false}}function p(v){if(!v)return v;const t=v.trim();if(!t)return v;if(!z())return v;const m=M[t];return m?v.replace(t,m):v}function n(o){const e=o.parentElement;if(!e||S.has(e.tagName)||e.closest?.("[contenteditable=true],[contenteditable=''],[role=textbox]"))return;const v=p(o.nodeValue);if(v!==o.nodeValue)o.nodeValue=v}function a(e){for(const r of ["aria-label","aria-description","aria-valuetext","placeholder","title"]){const v=e.getAttribute?.(r);if(v){const m=p(v);m!==v&&e.setAttribute(r,m)}}}function w(root=document.body){try{const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);for(let o;o=tw.nextNode();)n(o);root.querySelectorAll?.("[aria-label],[aria-description],[aria-valuetext],[placeholder],[title]").forEach(a)}catch{}}new MutationObserver(ms=>{for(const m of ms){m.type==="characterData"&&n(m.target);m.type==="attributes"&&a(m.target);m.addedNodes&&m.addedNodes.forEach(o=>{o.nodeType===3?n(o):o.nodeType===1&&w(o)})}}).observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["aria-label","aria-description","aria-valuetext","placeholder","title"]});document.readyState==="loading"?document.addEventListener("DOMContentLoaded",()=>w()):w();setInterval(w,1500)})();`;
+  const script = `;(()=>{const k="__CLAUDE_CN_DOM_TRANSLATOR_V4__";if(globalThis[k])return;globalThis[k]=true;const M=${JSON.stringify(dictionary)};const W=Object.fromEntries(Object.entries(M).map(([e,c])=>[e.replace(/\\s+/g," "),c]));const S=new Set(["SCRIPT","STYLE","TEXTAREA","INPUT","CODE","PRE"]);function z(){try{const a=[globalThis.__CLAUDE_CN_LOCALE,document.documentElement.lang,navigator.language,localStorage.getItem("locale"),localStorage.getItem("claude_locale")].filter(Boolean).join("|").toLowerCase();return a.includes("zh-cn")||a.includes("zh_hans")||a.includes("zh-hans")}catch{return false}}function p(v){if(!v)return v;const t=v.trim();if(!t)return v;if(!z())return v;const m=M[t]||W[t.replace(/\\s+/g," ")];return m?v.replace(t,m):v}function n(o){const e=o.parentElement;if(!e||S.has(e.tagName)||e.closest?.("[contenteditable=true],[contenteditable=''],[role=textbox]"))return;const v=p(o.nodeValue);if(v!==o.nodeValue)o.nodeValue=v}function a(e){for(const r of ["aria-label","aria-description","aria-valuetext","placeholder","title"]){const v=e.getAttribute?.(r);if(v){const m=p(v);m!==v&&e.setAttribute(r,m)}}}function w(root=document.body){try{const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);for(let o;o=tw.nextNode();)n(o);root.querySelectorAll?.("[aria-label],[aria-description],[aria-valuetext],[placeholder],[title]").forEach(a)}catch{}}new MutationObserver(ms=>{for(const m of ms){m.type==="characterData"&&n(m.target);m.type==="attributes"&&a(m.target);m.addedNodes&&m.addedNodes.forEach(o=>{o.nodeType===3?n(o):o.nodeType===1&&w(o)})}}).observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["aria-label","aria-description","aria-valuetext","placeholder","title"]});document.readyState==="loading"?document.addEventListener("DOMContentLoaded",()=>w()):w();setInterval(w,1500)})();`;
   let total = 0;
   for (const file of jsFiles(assetsDir)) {
     if (!path.basename(file).startsWith("index-")) continue;
@@ -842,7 +898,7 @@ function installRuntimeDomTranslator() {
       /^;\(\(\)=>\{const k="__CLAUDE_CN_DOM_TRANSLATOR(?:_V\d+)?__";[^\n]*\}\)\(\);\n/gm,
       ""
     );
-    if (cleaned.includes("__CLAUDE_CN_DOM_TRANSLATOR_V3__")) continue;
+    if (cleaned.includes("__CLAUDE_CN_DOM_TRANSLATOR_V4__")) continue;
     backup(file);
     fs.writeFileSync(file, script + "\n" + cleaned);
     total++;
@@ -1204,11 +1260,28 @@ async function patchAsarMainProcess() {
     "zoomIn": "放大",
     "zoomOut": "缩小"
   };
-  const nativeMenuPatch = `const __CLAUDE_CN_NATIVE_MENU_V2__=e=>{const M=${JSON.stringify(nativeMenuTranslations)};const R=${JSON.stringify(nativeRoleTranslations)};function z(){try{const c=typeof qs=="function"?qs():{};const a=[];try{a.push(aA?.app?.getLocale?.())}catch{}try{a.push(aA?.app?.getPreferredSystemLanguages?.()?.join("|"))}catch{}try{a.push(c&&c.locale)}catch{}const l=a.filter(Boolean).join("|").toLowerCase();return l.includes("zh-cn")||l.includes("zh_hans")||l.includes("zh-hans")}catch{return false}}function p(v){if(typeof v!="string")return v;const t=v.trim();const m=M[t];return m?v.replace(t,m):v}function w(o){if(Array.isArray(o)){for(const i of o)w(i);return o}if(o&&typeof o=="object"){if(o.label)o.label=p(o.label);else if(o.role&&R[o.role])o.label=R[o.role];if(o.sublabel)o.sublabel=p(o.sublabel);if(o.submenu)w(o.submenu)}return o}return z()?w(e):e};`;
-  patchFile(mainFile, [[
-    "async function orA(){const e=Yr?await WWr():await zWr();return aA.Menu.buildFromTemplate(e)}",
-    `${nativeMenuPatch}async function orA(){const e=Yr?await WWr():await zWr();return aA.Menu.buildFromTemplate(__CLAUDE_CN_NATIVE_MENU_V2__(e))}`
-  ]]);
+  const nativeMenuPatch = `const __CLAUDE_CN_NATIVE_MENU_V3__=e=>{const M=${JSON.stringify(nativeMenuTranslations)};const R=${JSON.stringify(nativeRoleTranslations)};function z(){try{const c=typeof qs=="function"?qs():{};const a=[];try{a.push(aA?.app?.getLocale?.())}catch{}try{a.push(aA?.app?.getPreferredSystemLanguages?.()?.join("|"))}catch{}try{a.push(c&&c.locale)}catch{}const l=a.filter(Boolean).join("|").toLowerCase();return l.includes("zh-cn")||l.includes("zh_hans")||l.includes("zh-hans")}catch{return false}}function d(v){if(typeof v!="string")return v;let s=v;s=s.replace(/\\bOpenAI Official\\b/g,"OpenAI 官方");s=s.replace(/\\bOfficial\\b/g,"官方");s=s.replace(/\\bh\\s*(\\d+)%/g,"小时$1%");s=s.replace(/\\bw\\s*(\\d+)%/g,"周$1%");return s}function p(v){if(typeof v!="string")return v;const t=v.trim();const m=M[t];if(m)return v.replace(t,m);const parts=v.split(" · ");if(parts.length>1)return parts.map(x=>{const y=x.trim();return M[y]||d(x)}).join(" · ");return d(v)}function w(o){if(Array.isArray(o)){for(const i of o)w(i);return o}if(o&&typeof o=="object"){if(o.label)o.label=p(o.label);else if(o.role&&R[o.role])o.label=R[o.role];if(o.sublabel)o.sublabel=p(o.sublabel);if(o.submenu)w(o.submenu)}return o}return z()?w(e):e};`;
+  const nativeOriginal = "async function orA(){const e=Yr?await WWr():await zWr();return aA.Menu.buildFromTemplate(e)}";
+  const nativeReplacement = `${nativeMenuPatch}async function orA(){const e=Yr?await WWr():await zWr();return aA.Menu.buildFromTemplate(__CLAUDE_CN_NATIVE_MENU_V3__(e))}`;
+  backup(mainFile);
+  let mainSource = fs.readFileSync(mainFile, "utf8");
+  let nativeMenuChanged = 0;
+  if (mainSource.includes(nativeOriginal)) {
+    mainSource = mainSource.replace(nativeOriginal, nativeReplacement);
+    nativeMenuChanged = 1;
+  } else {
+    const patchedNativeMenu = /const __CLAUDE_CN_NATIVE_MENU_V\d+__=e=>\{[\s\S]*?\};async function orA\(\)\{const e=Yr\?await WWr\(\):await zWr\(\);return aA\.Menu\.buildFromTemplate\(__CLAUDE_CN_NATIVE_MENU_V\d+__\(e\)\)\}/;
+    if (patchedNativeMenu.test(mainSource)) {
+      mainSource = mainSource.replace(patchedNativeMenu, nativeReplacement);
+      nativeMenuChanged = 1;
+    }
+  }
+  if (nativeMenuChanged > 0) {
+    fs.writeFileSync(mainFile, mainSource);
+    log("index.js: 菜单汉化补丁已更新");
+  } else if (!mainSource.includes("__CLAUDE_CN_NATIVE_MENU_V3__")) {
+    log("index.js: 未命中菜单汉化入口");
+  }
   await asar.createPackageWithOptions(extractDir, newAsar, {
     unpack: "{**/*.node,**/spawn-helper}"
   });
