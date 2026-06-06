@@ -12,16 +12,19 @@ TOOL_DIR="$RESOURCES_DIR/Claude_CN"
 SOURCE_FILE="$ROOT_DIR/macos/ClaudeCNMenuBar/ClaudeCNMenuBar.swift"
 INFO_PLIST="$ROOT_DIR/macos/ClaudeCNMenuBar/Info.plist"
 ZIP_FILE="$ROOT_DIR/dist/$APP_NAME-macos.zip"
+MODULE_CACHE_DIR="$ROOT_DIR/dist/swift-module-cache"
 
 echo "[Claude_CN] 构建 Swift 菜单栏应用：$APP_DIR"
 
 rm -rf "$APP_DIR" "$ZIP_FILE"
-mkdir -p "$MACOS_DIR" "$TOOL_DIR"
+mkdir -p "$MACOS_DIR" "$TOOL_DIR" "$MODULE_CACHE_DIR"
+export CLANG_MODULE_CACHE_PATH="$MODULE_CACHE_DIR"
 
 cp "$INFO_PLIST" "$CONTENTS_DIR/Info.plist"
 
 swiftc \
   -O \
+  -module-cache-path "$MODULE_CACHE_DIR" \
   -framework AppKit \
   -framework Foundation \
   "$SOURCE_FILE" \

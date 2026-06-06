@@ -24,6 +24,8 @@ npm run menubar:build
 - `node_modules/`
 - 当前机器可用的 `node` 二进制
 
+构建时 Swift/Clang 模块缓存会写入 `dist/swift-module-cache`，避免依赖用户 Home 目录下的 clang 缓存权限。
+
 如果目标电脑仍然提示无法运行 Node，说明构建机上的 Node 二进制不适合目标架构。建议分别在 Apple Silicon 和 Intel Mac 上各构建一份，或者后续接入官方 universal Node runtime。
 
 ## GitHub 发布建议
@@ -39,10 +41,10 @@ gh repo create OneBigMoon/claude-desktop-cn --public --source=. --remote=origin 
 ```bash
 npm run dist:dmg
 npm run menubar:build
-gh release create v0.0.17 \
-  dist/claude-desktop-cn-macos-m5-0.0.17.dmg \
+gh release create v0.0.18 \
+  dist/claude-desktop-cn-macos-m5-0.0.18.dmg \
   dist/ClaudeCN-macos.zip \
-  --title "claude-desktop-cn v0.0.17" \
+  --title "claude-desktop-cn v0.0.18" \
   --notes "Claude Desktop 中文化补丁工具，新增 Swift 菜单栏 App。"
 ```
 
@@ -78,3 +80,12 @@ gh release create v0.0.17 \
 - 影响汉化覆盖范围时，说明中写清楚新增覆盖了哪些页面、菜单、按钮或设置层级。
 - 影响核心流程时，说明中写清楚是否已测试 `重新汉化`、`恢复原版`、版本判断和发布产物。
 - 纯文档提交可以不发 Release；用户可见功能变更必须发布新的 GitHub Release。
+
+## 当前发布重点
+
+`v0.0.18` 重点完善普通用户可用性：
+
+- 菜单栏 App 增加 `选择 Claude`，支持 Claude Desktop 不在默认路径的情况。
+- 管理员授权取消、密码错误、权限不足、路径错误、版本不适配、App 包不完整时显示中文原因和处理建议。
+- 错误弹窗可直接打开 `~/Library/Logs/ClaudeCN.log`。
+- 命令行入口在修改 Claude.app 前增加有效性和写权限检查，避免失败时只出现原始英文报错。

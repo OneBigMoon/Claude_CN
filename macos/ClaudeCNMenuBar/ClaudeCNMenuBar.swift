@@ -1,9 +1,11 @@
 import AppKit
 import Foundation
+import UniformTypeIdentifiers
 
 struct ClaudeCNState {
     var status: String = "检测中"
     var version: String = "-"
+    var appPath: String = "/Applications/Claude.app"
     var compatibleVersion: String = "1.10628.x"
     var compatibility: String = "检测中"
     var updateStatus: String = "检查更新"
@@ -18,6 +20,7 @@ enum PanelAction {
     case repatch
     case restore
     case refresh
+    case chooseApp
     case update
     case github
     case quit
@@ -47,8 +50,9 @@ final class ClaudeCNPanelView: NSView {
     private var restoreRect: NSRect { NSRect(x: 28, y: 310, width: 264, height: 44) }
     private var authorRect: NSRect { NSRect(x: 30, y: 392, width: 260, height: 18) }
     private var updateRect: NSRect { NSRect(x: 28, y: 486, width: 264, height: 30) }
-    private var refreshRect: NSRect { NSRect(x: 28, y: 530, width: 92, height: 32) }
-    private var quitRect: NSRect { NSRect(x: 200, y: 530, width: 92, height: 32) }
+    private var refreshRect: NSRect { NSRect(x: 24, y: 530, width: 82, height: 32) }
+    private var chooseAppRect: NSRect { NSRect(x: 119, y: 530, width: 82, height: 32) }
+    private var quitRect: NSRect { NSRect(x: 214, y: 530, width: 82, height: 32) }
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -98,6 +102,7 @@ final class ClaudeCNPanelView: NSView {
         if authorRect.contains(point) { return .github }
         if updateRect.contains(point) { return .update }
         if refreshRect.contains(point) { return .refresh }
+        if chooseAppRect.contains(point) { return .chooseApp }
         if quitRect.contains(point) { return .quit }
         return nil
     }
@@ -221,6 +226,7 @@ final class ClaudeCNPanelView: NSView {
 
     private func drawFooter() {
         drawButton(rect: refreshRect, title: "刷新状态", symbol: nil, action: .refresh, large: false)
+        drawButton(rect: chooseAppRect, title: "选择 Claude", symbol: nil, action: .chooseApp, large: false)
         drawButton(rect: quitRect, title: "退出", symbol: nil, action: .quit, large: false)
     }
 
@@ -289,6 +295,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var panelView: ClaudeCNPanelView!
     private var outsideClickMonitor: Any?
     private var state = ClaudeCNState()
+    private let selectedClaudeAppPathKey = "ClaudeCN.selectedClaudeAppPath"
     private let logURL = FileManager.default.homeDirectoryForCurrentUser
         .appendingPathComponent("Library/Logs/ClaudeCN.log")
 
@@ -313,6 +320,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             case .refresh:
                 self?.refreshStatus(showAlert: false)
                 self?.checkForUpdates()
+            case .chooseApp:
+                self?.chooseClaudeApp()
             case .update:
                 self?.openLatestRelease()
             case .github:
@@ -452,6 +461,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSWorkspace.shared.open(url)
     }
 
+    private func chooseClaudeApp() {
+        let panel = NSOpenPanel()
+        panel.title = "选择 Claude.app"
+        panel.message = "请选择 Claude Desktop 官方 App，通常位于 /Applications/Claude.app。"
+        panel.prompt = "使用这个 Claude"
+        panel.directoryURL = URL(fileURLWithPath: "/Applications")
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.applicationBundle]
+
+        let response = panel.runModal()
+        guard response == .OK, let url = panel.url else { return }
+
+        UserDefaults.standard.set(url.path, forKey: selectedClaudeAppPathKey)
+        appendLog("已选择 Claude.app：\(url.path)")
+        showAlert(title: "已选择 Claude.app", message: "后续汉化、恢复和状态检查都会使用：\n\(url.path)")
+        refreshStatus(showAlert: false)
+    }
+
     private func compareVersion(_ lhs: String, _ rhs: String) -> ComparisonResult {
         let left = lhs.split(separator: ".").map { Int($0) ?? 0 }
         let right = rhs.split(separator: ".").map { Int($0) ?? 0 }
@@ -516,6 +545,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func parseStatus(_ output: String) -> ClaudeCNState {
         var next = ClaudeCNState()
         for line in output.split(separator: "\n").map(String.init) {
+            if line.contains("[Claude_CN] Claude.app:") {
+                let raw = line.components(separatedBy: "Claude.app:").last?.trimmingCharacters(in: .whitespaces) ?? next.appPath
+                next.appPath = raw.replacingOccurrences(of: "（未找到）", with: "")
+            }
             if line.contains("[Claude_CN] 状态:") {
                 next.status = line.components(separatedBy: "状态:").last?.trimmingCharacters(in: .whitespaces) ?? next.status
             }
@@ -544,9 +577,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let root = self.toolRootURL() else {
                     throw RunnerError.missingToolRoot
                 }
+                let finalArguments = self.argumentsWithSelectedClaudeApp(arguments)
                 let output = requiresAdmin
-                    ? try self.runWithAdmin(root: root, arguments: arguments)
-                    : try self.runWithoutAdmin(root: root, arguments: arguments)
+                    ? try self.runWithAdmin(root: root, arguments: finalArguments)
+                    : try self.runWithoutAdmin(root: root, arguments: finalArguments)
                 DispatchQueue.main.async { completion(.success(output)) }
             } catch {
                 DispatchQueue.main.async { completion(.failure(error)) }
@@ -581,7 +615,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func runWithAdmin(root: URL, arguments: [String]) throws -> String {
-        let node = bundledNodeURL().map { shellQuote($0.path) } ?? "/usr/bin/env node"
+        let node = bundledNodeURL().map { shellQuote($0.path) } ?? "PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin /usr/bin/env node"
         let args = arguments.map(shellQuote).joined(separator: " ")
         let command = "cd \(shellQuote(root.path)) && \(node) scripts/claude-cn.mjs \(args)"
         let appleScript = "do shell script \(appleScriptString(command)) with administrator privileges"
@@ -602,6 +636,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             throw RunnerError.processFailed(process.terminationStatus, output)
         }
         return output
+    }
+
+    private func argumentsWithSelectedClaudeApp(_ arguments: [String]) -> [String] {
+        if arguments.contains("--app") || arguments.contains(where: { $0.hasPrefix("--app=") }) {
+            return arguments
+        }
+        guard let path = UserDefaults.standard.string(forKey: selectedClaudeAppPathKey),
+              !path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return arguments
+        }
+        return arguments + ["--app", path]
     }
 
     private func toolRootURL() -> URL? {
@@ -643,7 +688,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             alert.messageText = title
             alert.informativeText = message.isEmpty ? "没有额外输出。" : message
             alert.addButton(withTitle: "好")
-            alert.runModal()
+            if FileManager.default.fileExists(atPath: self.logURL.path) {
+                alert.addButton(withTitle: "打开日志")
+            }
+            let response = alert.runModal()
+            if response == .alertSecondButtonReturn {
+                NSWorkspace.shared.open(self.logURL)
+            }
         }
     }
 
@@ -679,12 +730,97 @@ enum RunnerError: LocalizedError {
         case .missingToolRoot:
             return "没有找到内置的 Claude_CN 工具资源。请重新构建或重新下载完整 App。"
         case .processFailed(let status, let output):
-            let detail = output.trimmingCharacters(in: .whitespacesAndNewlines)
-            if detail.isEmpty {
-                return "命令执行失败，退出码：\(status)。"
-            }
-            return "命令执行失败，退出码：\(status)。\n\n\(detail)"
+            return Self.friendlyProcessFailure(status: status, output: output)
         }
+    }
+
+    private static func friendlyProcessFailure(status: Int32, output: String) -> String {
+        let detail = output.trimmingCharacters(in: .whitespacesAndNewlines)
+        let lower = detail.lowercased()
+
+        if status == -128 || lower.contains("user canceled") || lower.contains("(-128)") {
+            return """
+            你取消了管理员授权，ClaudeCN 没有修改 Claude。
+
+            重新点击“重新汉化”或“恢复原版”，在 macOS 弹出的授权窗口中输入本机管理员密码即可。
+            """
+        }
+
+        if lower.contains("authentication failed") || lower.contains("incorrect password") {
+            return """
+            管理员授权失败，可能是密码输入错误，或当前账号没有管理员权限。
+
+            请使用本机管理员账号密码重试。
+            """
+        }
+
+        if lower.contains("not authorized to send apple events") || lower.contains("erraeeventnotpermitted") {
+            return """
+            macOS 阻止 ClaudeCN 调用系统授权窗口。
+
+            请到“系统设置 > 隐私与安全性 > 自动化”允许 ClaudeCN 控制系统事件，然后重新尝试。
+            """
+        }
+
+        if lower.contains("permission denied") || lower.contains("operation not permitted") || lower.contains("eacces") || lower.contains("eperm") {
+            return """
+            权限不足，无法修改 Claude.app。
+
+            请确认：
+            1. Claude Desktop 位于 /Applications/Claude.app，或已通过“选择 Claude”选中了正确 App。
+            2. 点击操作后，在 macOS 授权弹窗中输入管理员密码。
+            3. 操作前先退出正在运行的 Claude。
+
+            原始输出：
+            \(detail.isEmpty ? "无" : detail)
+            """
+        }
+
+        if detail.contains("找不到 Claude.app") || detail.contains("不是有效的 Claude.app") || detail.contains("选择的 App 不是 Claude Desktop") {
+            return """
+            Claude.app 路径不正确。
+
+            请点击底部“选择 Claude”，手动选择 Claude Desktop 官方 App，通常是 /Applications/Claude.app。
+
+            原始输出：
+            \(detail)
+            """
+        }
+
+        if detail.contains("当前 Claude Desktop 版本不在已适配范围内") {
+            return """
+            当前 Claude Desktop 版本还没有适配，已停止执行以避免损坏应用。
+
+            请先查看 GitHub Releases 是否有新版本 ClaudeCN；确认要冒险尝试时，再使用命令行 --force。
+
+            原始输出：
+            \(detail)
+            """
+        }
+
+        if detail.contains("没有找到可恢复的备份") {
+            return """
+            没有找到可恢复的备份。
+
+            只有成功执行过一次“重新汉化”后，ClaudeCN 才能恢复到汉化前的备份。
+            """
+        }
+
+        if lower.contains("cannot find module") || lower.contains("node_modules") {
+            return """
+            ClaudeCN.app 包不完整，缺少运行所需文件。
+
+            请从 GitHub Releases 下载完整的 ClaudeCN-macos.zip 或 DMG，不要只复制单个可执行文件。
+
+            原始输出：
+            \(detail)
+            """
+        }
+
+        if detail.isEmpty {
+            return "命令执行失败，退出码：\(status)。请打开日志查看详情。"
+        }
+        return "命令执行失败，退出码：\(status)。\n\n\(detail)"
     }
 }
 

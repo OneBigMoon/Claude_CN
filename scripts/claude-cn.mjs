@@ -22,6 +22,22 @@ function die(message, code = 1) {
   process.exit(code);
 }
 
+process.on("uncaughtException", (error) => {
+  const code = error?.code ? ` ${error.code}` : "";
+  const message = error?.message || String(error);
+  if (["EACCES", "EPERM"].includes(error?.code)) {
+    die(`权限不足，无法修改 Claude.app。${code}
+
+请使用 ClaudeCN.app 点击“重新汉化”并在 macOS 授权弹窗中输入管理员密码。
+如果你在命令行执行，请使用管理员权限重新运行。
+
+原始错误：${message}`);
+  }
+  die(`执行失败。${code}
+
+${message}`);
+});
+
 function argValue(name) {
   const index = args.indexOf(name);
   if (index >= 0) return args[index + 1];
@@ -64,6 +80,55 @@ function claudeAppVersion(app) {
   const infoPlist = path.join(app, "Contents", "Info.plist");
   if (!fs.existsSync(infoPlist)) return "";
   return readPlistValue(infoPlist, "CFBundleShortVersionString") || readPlistValue(infoPlist, "CFBundleVersion");
+}
+
+function assertValidClaudeApp(app) {
+  if (!fs.existsSync(app)) die(`找不到 Claude.app：${app}
+
+请确认 Claude Desktop 已安装，或在 ClaudeCN.app 中点击“选择 Claude”手动选择 Claude.app。`);
+
+  const infoPlist = path.join(app, "Contents", "Info.plist");
+  const resources = path.join(app, "Contents", "Resources");
+  const appAsar = path.join(resources, "app.asar");
+  if (!fs.existsSync(infoPlist) || !fs.existsSync(resources) || !fs.existsSync(appAsar)) {
+    die(`${app} 不是有效的 Claude.app。
+
+请选择 Claude Desktop 官方 App，而不是 ClaudeCN.app、DMG 挂载目录或其它应用。`);
+  }
+
+  const bundleId = readPlistValue(infoPlist, "CFBundleIdentifier");
+  if (bundleId && bundleId !== "com.anthropic.claudefordesktop") {
+    die(`选择的 App 不是 Claude Desktop。
+
+路径：${app}
+Bundle ID：${bundleId}
+
+请重新选择 /Applications/Claude.app。`);
+  }
+}
+
+function ensureWritableClaudeApp(app, actionText) {
+  const resources = path.join(app, "Contents", "Resources");
+  try {
+    fs.accessSync(resources, fs.constants.W_OK);
+    return;
+  } catch {}
+
+  const isRoot = typeof process.getuid === "function" && process.getuid() === 0;
+  if (isRoot) return;
+
+  die(`权限不足，无法${actionText}：${app}
+
+ClaudeCN 需要修改 /Applications/Claude.app、重打包 app.asar 并重新签名。
+
+推荐操作：
+1. 打开 ClaudeCN.app。
+2. 点击“重新汉化”或“恢复原版”。
+3. 在 macOS 授权弹窗中输入本机管理员密码。
+
+命令行用户可以使用管理员权限运行：
+sudo node scripts/claude-cn.mjs ${command}
+`);
 }
 
 function compatibleVersionText() {
@@ -156,7 +221,8 @@ function forceZhCnLocaleConfigs() {
 
 function apply() {
   const app = resolveClaudeApp();
-  if (!fs.existsSync(app)) die(`找不到 Claude.app：${app}\n可使用 --app /path/to/Claude.app 指定路径。`);
+  assertValidClaudeApp(app);
+  ensureWritableClaudeApp(app, "汉化 Claude.app");
   const appVersion = claudeAppVersion(app);
   const compatibility = compatibilityForVersion(appVersion);
   const force = args.includes("--force");
@@ -176,7 +242,10 @@ function apply() {
     cwd: repoRoot,
     stdio: "inherit"
   });
-  if (result.status !== 0) process.exit(result.status ?? 1);
+  if (result.error) die(`无法启动汉化脚本：${result.error.message}`);
+  if (result.status !== 0) die(`汉化流程失败，退出码：${result.status ?? 1}。
+
+如果错误和权限有关，请重新点击 ClaudeCN.app 的“重新汉化”，并在授权弹窗中输入管理员密码。`, result.status ?? 1);
   activateClaude(app);
   const running = waitForClaude();
   if (running) {
@@ -267,7 +336,8 @@ function restore() {
   const app = resolveClaudeApp();
   const backup = argValue("--backup") || latestBackup();
   if (!backup || !fs.existsSync(backup)) die("没有找到可恢复的备份。请先成功执行过一次汉化。");
-  if (!fs.existsSync(app)) die(`找不到 Claude.app：${app}\n可使用 --app /path/to/Claude.app 指定路径。`);
+  assertValidClaudeApp(app);
+  ensureWritableClaudeApp(app, "恢复 Claude.app");
 
   log(`准备恢复原版：${app}`);
   log(`使用备份目录：${backup}`);
