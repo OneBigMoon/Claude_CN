@@ -19,6 +19,37 @@ func roundedRect(_ rect: NSRect, radius: CGFloat, fill: NSColor) {
     NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius).fill()
 }
 
+func drawText(_ text: String, in rect: NSRect, size: CGFloat, color: NSColor) {
+    let paragraph = NSMutableParagraphStyle()
+    paragraph.alignment = .center
+    paragraph.lineBreakMode = .byClipping
+    let font = NSFont.systemFont(ofSize: size, weight: .black)
+    let attrs: [NSAttributedString.Key: Any] = [
+        .font: font,
+        .foregroundColor: color,
+        .paragraphStyle: paragraph,
+        .kern: -size * 0.08
+    ]
+    let measured = NSString(string: text).size(withAttributes: attrs)
+    let textRect = NSRect(
+        x: rect.minX,
+        y: rect.midY - measured.height * 0.48,
+        width: rect.width,
+        height: measured.height
+    )
+    NSString(string: text).draw(in: textRect, withAttributes: attrs)
+}
+
+func strokeLine(from start: NSPoint, to end: NSPoint, width: CGFloat, color: NSColor) {
+    let path = NSBezierPath()
+    path.move(to: start)
+    path.line(to: end)
+    path.lineWidth = width
+    path.lineCapStyle = .round
+    color.setStroke()
+    path.stroke()
+}
+
 func drawClaudeCNIcon(size: CGFloat) -> NSImage {
     let image = NSImage(size: NSSize(width: size, height: size))
     image.lockFocus()
@@ -28,59 +59,49 @@ func drawClaudeCNIcon(size: CGFloat) -> NSImage {
     NSRect(x: 0, y: 0, width: size, height: size).fill()
     NSGraphicsContext.current?.imageInterpolation = .high
 
-    let inset = size * 0.094
-    let card = NSRect(x: inset, y: inset, width: size - inset * 2, height: size - inset * 2)
-    let cardPath = NSBezierPath(roundedRect: card, xRadius: size * 0.226, yRadius: size * 0.226)
-    let gradient = NSGradient(colors: [
-        color(0x121826),
-        color(0x1F3A4A),
-        color(0xF2A541)
-    ])!
-    gradient.draw(in: cardPath, angle: -38)
+    let card = NSRect(x: size * 0.074, y: size * 0.102, width: size * 0.852, height: size * 0.797)
+    let cardPath = NSBezierPath(roundedRect: card, xRadius: size * 0.223, yRadius: size * 0.223)
+    let paper = NSGradient(colors: [color(0xFFF7EF), color(0xEDE4D7)])!
+    paper.draw(in: cardPath, angle: -42)
 
-    let orbit = NSBezierPath()
-    orbit.move(to: NSPoint(x: size * 0.18, y: size * 0.674))
-    orbit.curve(
-        to: NSPoint(x: size * 0.818, y: size * 0.252),
-        controlPoint1: NSPoint(x: size * 0.325, y: size * 0.525),
-        controlPoint2: NSPoint(x: size * 0.506, y: size * 0.375)
+    let tile = NSRect(x: size * 0.113, y: size * 0.271, width: size * 0.414, height: size * 0.414)
+    let tilePath = NSBezierPath(roundedRect: tile, xRadius: size * 0.102, yRadius: size * 0.102)
+    let orange = NSGradient(colors: [color(0xFF9168), color(0xE65A35)])!
+    orange.draw(in: tilePath, angle: -45)
+
+    let moon = NSBezierPath()
+    moon.appendOval(in: NSRect(x: size * 0.172, y: size * 0.354, width: size * 0.33, height: size * 0.33))
+    moon.appendOval(in: NSRect(x: size * 0.236, y: size * 0.356, width: size * 0.305, height: size * 0.305))
+    moon.windingRule = .evenOdd
+    color(0xFFF7EF, alpha: 0.96).setFill()
+    moon.fill()
+
+    let ivory = color(0xFFF7EF)
+    roundedRect(NSRect(x: size * 0.311, y: size * 0.346, width: size * 0.045, height: size * 0.268), radius: size * 0.023, fill: ivory)
+    roundedRect(NSRect(x: size * 0.232, y: size * 0.410, width: size * 0.201, height: size * 0.047), radius: size * 0.023, fill: ivory)
+    roundedRect(NSRect(x: size * 0.232, y: size * 0.523, width: size * 0.201, height: size * 0.047), radius: size * 0.023, fill: ivory)
+    roundedRect(NSRect(x: size * 0.232, y: size * 0.410, width: size * 0.047, height: size * 0.160), radius: size * 0.023, fill: ivory)
+    roundedRect(NSRect(x: size * 0.387, y: size * 0.410, width: size * 0.047, height: size * 0.160), radius: size * 0.023, fill: ivory)
+
+    let cnRect = NSRect(x: size * 0.570, y: size * 0.324, width: size * 0.326, height: size * 0.309)
+    roundedRect(cnRect, radius: size * 0.092, fill: color(0x171C25))
+    drawText("CN", in: cnRect.insetBy(dx: size * 0.018, dy: 0), size: size * 0.168, color: color(0xFFF7EF))
+    roundedRect(
+        NSRect(x: size * 0.635, y: size * 0.578, width: size * 0.199, height: size * 0.018),
+        radius: size * 0.009,
+        fill: color(0xFF7A45)
     )
-    orbit.lineWidth = max(2, size * 0.027)
-    orbit.lineCapStyle = .round
-    color(0xffffff, alpha: 0.17).setStroke()
-    orbit.stroke()
-
-    let crescent = NSBezierPath()
-    crescent.appendOval(in: NSRect(x: size * 0.18, y: size * 0.246, width: size * 0.54, height: size * 0.54))
-    crescent.appendOval(in: NSRect(x: size * 0.297, y: size * 0.226, width: size * 0.51, height: size * 0.51))
-    crescent.windingRule = .evenOdd
-    color(0xFFF7E6).setFill()
-    crescent.fill()
-
-    color(0xFF7A45).setFill()
-    NSBezierPath(ovalIn: NSRect(x: size * 0.66, y: size * 0.232, width: size * 0.106, height: size * 0.106)).fill()
-
-    let ivory = color(0xFFF7E6)
-    let gold = color(0xFFB000, alpha: 0.82)
-    roundedRect(NSRect(x: size * 0.574, y: size * 0.297, width: size * 0.07, height: size * 0.398), radius: size * 0.035, fill: ivory)
-    roundedRect(NSRect(x: size * 0.475, y: size * 0.383, width: size * 0.27, height: size * 0.07), radius: size * 0.035, fill: ivory)
-    roundedRect(NSRect(x: size * 0.475, y: size * 0.551, width: size * 0.27, height: size * 0.07), radius: size * 0.035, fill: ivory)
-    roundedRect(NSRect(x: size * 0.475, y: size * 0.383, width: size * 0.07, height: size * 0.238), radius: size * 0.035, fill: ivory)
-    roundedRect(NSRect(x: size * 0.674, y: size * 0.383, width: size * 0.07, height: size * 0.238), radius: size * 0.035, fill: ivory)
-    roundedRect(NSRect(x: size * 0.576, y: size * 0.299, width: size * 0.066, height: size * 0.394), radius: size * 0.033, fill: gold)
 
     return image
 }
 
-func writePNG(image: NSImage, pixels: Int, filename: String) throws {
+func writePNG(image: NSImage, filename: String) throws {
     guard let tiff = image.tiffRepresentation,
           let bitmap = NSBitmapImageRep(data: tiff),
           let data = bitmap.representation(using: .png, properties: [:]) else {
         throw NSError(domain: "ClaudeCNIcon", code: 1, userInfo: [NSLocalizedDescriptionKey: "无法生成 \(filename)"])
     }
-    let url = outputURL.appendingPathComponent(filename)
-    try data.write(to: url)
-    _ = pixels
+    try data.write(to: outputURL.appendingPathComponent(filename))
 }
 
 let icons: [(points: Int, scale: Int, filename: String)] = [
@@ -99,5 +120,5 @@ let icons: [(points: Int, scale: Int, filename: String)] = [
 for icon in icons {
     let pixels = icon.points * icon.scale
     let image = drawClaudeCNIcon(size: CGFloat(pixels))
-    try writePNG(image: image, pixels: pixels, filename: icon.filename)
+    try writePNG(image: image, filename: icon.filename)
 }

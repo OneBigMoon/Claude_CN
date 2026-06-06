@@ -42,10 +42,10 @@ gh repo create OneBigMoon/claude-desktop-cn --public --source=. --remote=origin 
 ```bash
 npm run dist:dmg
 npm run menubar:build
-gh release create v0.0.19 \
-  dist/claude-desktop-cn-macos-m5-0.0.19.dmg \
+gh release create v0.0.20 \
+  dist/claude-desktop-cn-macos-m5-0.0.20.dmg \
   dist/ClaudeCN-macos.zip \
-  --title "claude-desktop-cn v0.0.19" \
+  --title "claude-desktop-cn v0.0.20" \
   --notes "Claude Desktop 中文化补丁工具，新增 Swift 菜单栏 App。"
 ```
 
@@ -84,9 +84,10 @@ gh release create v0.0.19 \
 
 ## 当前发布重点
 
-`v0.0.19` 重点完善品牌视觉和普通用户可用性：
+`v0.0.20` 重点完善品牌视觉和普通用户可用性：
 
-- 新增 ClaudeCN 自定义 logo：深色月相、中文“中”和暖橙强调色。
+- 新增 ClaudeCN 自定义 logo：橙色圆角标、原创月钩、几何中文符号和右侧 `CN` 识别块。
+- 避免直接复刻官方 Claude 标识，降低商标和视觉混淆风险。
 - 构建时自动生成 macOS `.icns`，Release 里的 `ClaudeCN.app` 会显示自有图标。
 - 菜单栏面板和状态栏优先使用 ClaudeCN 自定义图标，不再依赖系统 globe 占位图标。
 - 菜单栏 App 增加 `选择 Claude`，支持 Claude Desktop 不在默认路径的情况。

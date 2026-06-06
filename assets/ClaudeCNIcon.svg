@@ -1,28 +1,28 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="164" y1="112" x2="876" y2="912" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#121826"/>
-      <stop offset="0.55" stop-color="#1F3A4A"/>
-      <stop offset="1" stop-color="#F2A541"/>
+    <linearGradient id="paper" x1="112" y1="92" x2="912" y2="932" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF7EF"/>
+      <stop offset="1" stop-color="#ECE2D4"/>
     </linearGradient>
-    <linearGradient id="moon" x1="211" y1="226" x2="531" y2="646" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFF7E6"/>
-      <stop offset="1" stop-color="#F7D38B"/>
+    <linearGradient id="orange" x1="126" y1="268" x2="548" y2="708" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF9168"/>
+      <stop offset="1" stop-color="#E65A35"/>
     </linearGradient>
-    <filter id="shadow" x="44" y="56" width="936" height="936" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feDropShadow dx="0" dy="32" stdDeviation="36" flood-color="#061018" flood-opacity="0.34"/>
+    <filter id="softShadow" x="24" y="48" width="976" height="928" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#3A2318" flood-opacity="0.18"/>
     </filter>
   </defs>
-  <g filter="url(#shadow)">
-    <rect x="96" y="96" width="832" height="832" rx="232" fill="url(#bg)"/>
-    <path d="M184 690C332 538 518 384 838 258" stroke="#FFFFFF" stroke-opacity="0.17" stroke-width="28" stroke-linecap="round"/>
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M390 230C272 260 184 368 184 496C184 648 307 771 459 771C547 771 626 730 676 666C642 682 604 691 564 691C420 691 304 575 304 431C304 351 340 280 390 230Z" fill="url(#moon)"/>
-    <circle cx="729" cy="292" r="54" fill="#FF7A45"/>
-    <rect x="588" y="312" width="72" height="408" rx="36" fill="#FFF7E6"/>
-    <rect x="486" y="392" width="276" height="72" rx="36" fill="#FFF7E6"/>
-    <rect x="486" y="564" width="276" height="72" rx="36" fill="#FFF7E6"/>
-    <rect x="486" y="392" width="72" height="244" rx="36" fill="#FFF7E6"/>
-    <rect x="690" y="392" width="72" height="244" rx="36" fill="#FFF7E6"/>
-    <rect x="590" y="314" width="68" height="404" rx="34" fill="#FFB000" fill-opacity="0.82"/>
+  <g filter="url(#softShadow)">
+    <rect x="76" y="104" width="872" height="816" rx="228" fill="url(#paper)"/>
+    <rect x="116" y="278" width="424" height="424" rx="104" fill="url(#orange)"/>
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M257 363C208 392 176 445 176 506C176 599 252 674 345 674C391 674 433 656 463 626C443 635 421 640 398 640C312 640 242 570 242 484C242 436 264 393 298 365C285 361 271 361 257 363Z" fill="#FFF7EF" fill-opacity="0.96"/>
+    <rect x="318" y="354" width="46" height="274" rx="23" fill="#FFF7EF"/>
+    <rect x="238" y="420" width="206" height="48" rx="24" fill="#FFF7EF"/>
+    <rect x="238" y="536" width="206" height="48" rx="24" fill="#FFF7EF"/>
+    <rect x="238" y="420" width="48" height="164" rx="24" fill="#FFF7EF"/>
+    <rect x="396" y="420" width="48" height="164" rx="24" fill="#FFF7EF"/>
+    <rect x="584" y="332" width="334" height="316" rx="94" fill="#171C25"/>
+    <text x="750" y="535" text-anchor="middle" dominant-baseline="middle" font-family="Avenir Next, SF Pro Display, Helvetica, Arial, sans-serif" font-size="172" font-weight="900" letter-spacing="-12" fill="#FFF7EF">CN</text>
+    <rect x="648" y="592" width="204" height="18" rx="9" fill="#FF7A45"/>
   </g>
 </svg>
