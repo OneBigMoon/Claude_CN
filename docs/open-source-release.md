@@ -23,6 +23,7 @@ npm run menubar:build
 - `data/`
 - `node_modules/`
 - 当前机器可用的 `node` 二进制
+- 从 `assets/ClaudeCNIcon.svg` 自动生成的 `ClaudeCN.icns`
 
 构建时 Swift/Clang 模块缓存会写入 `dist/swift-module-cache`，避免依赖用户 Home 目录下的 clang 缓存权限。
 
@@ -41,10 +42,10 @@ gh repo create OneBigMoon/claude-desktop-cn --public --source=. --remote=origin 
 ```bash
 npm run dist:dmg
 npm run menubar:build
-gh release create v0.0.18 \
-  dist/claude-desktop-cn-macos-m5-0.0.18.dmg \
+gh release create v0.0.19 \
+  dist/claude-desktop-cn-macos-m5-0.0.19.dmg \
   dist/ClaudeCN-macos.zip \
-  --title "claude-desktop-cn v0.0.18" \
+  --title "claude-desktop-cn v0.0.19" \
   --notes "Claude Desktop 中文化补丁工具，新增 Swift 菜单栏 App。"
 ```
 
@@ -83,8 +84,11 @@ gh release create v0.0.18 \
 
 ## 当前发布重点
 
-`v0.0.18` 重点完善普通用户可用性：
+`v0.0.19` 重点完善品牌视觉和普通用户可用性：
 
+- 新增 ClaudeCN 自定义 logo：深色月相、中文“中”和暖橙强调色。
+- 构建时自动生成 macOS `.icns`，Release 里的 `ClaudeCN.app` 会显示自有图标。
+- 菜单栏面板和状态栏优先使用 ClaudeCN 自定义图标，不再依赖系统 globe 占位图标。
 - 菜单栏 App 增加 `选择 Claude`，支持 Claude Desktop 不在默认路径的情况。
 - 管理员授权取消、密码错误、权限不足、路径错误、版本不适配、App 包不完整时显示中文原因和处理建议。
 - 错误弹窗可直接打开 `~/Library/Logs/ClaudeCN.log`。

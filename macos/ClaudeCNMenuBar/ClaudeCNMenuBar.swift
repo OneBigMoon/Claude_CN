@@ -147,10 +147,11 @@ final class ClaudeCNPanelView: NSView {
 
     private func drawHeader() {
         let iconRect = NSRect(x: 26, y: 52, width: 30, height: 30)
-        NSColor.systemBlue.setFill()
-        NSBezierPath(ovalIn: iconRect).fill()
-
-        if let image = NSImage(systemSymbolName: "globe.asia.australia.fill", accessibilityDescription: "ClaudeCN") {
+        if let image = NSImage(named: "ClaudeCN") {
+            image.draw(in: iconRect, from: .zero, operation: .sourceOver, fraction: 1)
+        } else if let image = NSImage(systemSymbolName: "moon.stars.fill", accessibilityDescription: "ClaudeCN") {
+            NSColor(calibratedRed: 0.07, green: 0.09, blue: 0.15, alpha: 1).setFill()
+            NSBezierPath(roundedRect: iconRect, xRadius: 9, yRadius: 9).fill()
             image.draw(in: iconRect.insetBy(dx: 5, dy: 5), from: .zero, operation: .sourceOver, fraction: 1)
         } else {
             drawText("中", in: iconRect, font: .boldSystemFont(ofSize: 14), color: .white, alignment: .center)
@@ -304,7 +305,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.button?.title = "ClaudeCN"
-        statusItem.button?.image = NSImage(systemSymbolName: "globe.asia.australia.fill", accessibilityDescription: "ClaudeCN")
+        if let icon = NSImage(named: "ClaudeCN") {
+            icon.size = NSSize(width: 18, height: 18)
+            icon.isTemplate = false
+            statusItem.button?.image = icon
+        } else {
+            statusItem.button?.image = NSImage(systemSymbolName: "moon.stars.fill", accessibilityDescription: "ClaudeCN")
+        }
         statusItem.button?.imagePosition = .imageLeading
         statusItem.button?.target = self
         statusItem.button?.action = #selector(togglePanel)

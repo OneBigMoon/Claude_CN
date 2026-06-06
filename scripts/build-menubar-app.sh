@@ -13,6 +13,9 @@ SOURCE_FILE="$ROOT_DIR/macos/ClaudeCNMenuBar/ClaudeCNMenuBar.swift"
 INFO_PLIST="$ROOT_DIR/macos/ClaudeCNMenuBar/Info.plist"
 ZIP_FILE="$ROOT_DIR/dist/$APP_NAME-macos.zip"
 MODULE_CACHE_DIR="$ROOT_DIR/dist/swift-module-cache"
+ICON_GENERATOR="$ROOT_DIR/scripts/generate-macos-icon.swift"
+ICONSET_DIR="$ROOT_DIR/dist/ClaudeCN.iconset"
+ICON_FILE="$RESOURCES_DIR/ClaudeCN.icns"
 
 echo "[Claude_CN] 构建 Swift 菜单栏应用：$APP_DIR"
 
@@ -21,6 +24,12 @@ mkdir -p "$MACOS_DIR" "$TOOL_DIR" "$MODULE_CACHE_DIR"
 export CLANG_MODULE_CACHE_PATH="$MODULE_CACHE_DIR"
 
 cp "$INFO_PLIST" "$CONTENTS_DIR/Info.plist"
+
+echo "[Claude_CN] 生成自定义 App 图标"
+rm -rf "$ICONSET_DIR"
+swift "$ICON_GENERATOR" "$ICONSET_DIR"
+iconutil -c icns "$ICONSET_DIR" -o "$ICON_FILE"
+rm -rf "$ICONSET_DIR"
 
 swiftc \
   -O \
